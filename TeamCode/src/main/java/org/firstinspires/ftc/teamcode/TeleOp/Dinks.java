@@ -15,7 +15,7 @@ import dev.nextftc.hardware.driving.MecanumDriverControlled;
 import dev.nextftc.hardware.impl.MotorEx;
 
 @TeleOp
-public class Dinks extends dev.nextftc.ftc.NextFTCOpMode {
+public class Dinks extends NextFTCOpMode {
     public Dinks() {
         super();
     }
