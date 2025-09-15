@@ -39,14 +39,14 @@ public class eatingBalls {
     }
     public String colorCheck(){
         String ballColor = "unknown";
-        Color.RGBToHSV(colorSensor.red(), colorSensor.green(),  colorSensor.blue(),hsv);
+        Color.RGBToHSV(colorSensor.red(), colorSensor.green(),  colorSensor.blue(),hsv); //scale color sensor values to 0-255
         if(hsv[0]<greenMax&&hsv[0]>greenMin){
             ballColor="green";
         }
         else if(hsv[0]<purpleMax&&hsv[0]>purpleMin){
-            ballColor="green";
+            ballColor="purple";
         }else{
-            ballColor="unkown";
+            ballColor="unknown";
         }
         return ballColor;
     }
