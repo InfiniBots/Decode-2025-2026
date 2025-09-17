@@ -156,7 +156,7 @@ public class turretGoPewPew  {
         return ((kp*Error)+(ki*ErrorSum)+(kd*errorChange));
     }
     private long targetpos(double botx, double boty, double botTheta){
-        double ticksPerAng=(ticksFor1Rotation/360);
+        double ticksPerAng=(ticksFor1Rotation/360.0);
         double xLength=(goalx-botx);
         double yLength=(ygoal-boty);
         double rawturrAngle=Math.toDegrees(Math.atan2(xLength,yLength));
@@ -169,7 +169,7 @@ public class turretGoPewPew  {
     public void Aimer(double botx, double boty, double botTheta, long time){
         long Time=time-prevTime;
         prevTime=time;
-        double pow=PID(turrMover.getCurrentPosition(),targetpos(botx, boty, botTheta),time);
+        double pow=PID(turrMover.getCurrentPosition(),targetpos(botx, boty, botTheta),Time);
         turrMover.setPower(pow);
     }
 
