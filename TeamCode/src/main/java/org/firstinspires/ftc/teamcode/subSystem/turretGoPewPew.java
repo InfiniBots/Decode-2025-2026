@@ -119,6 +119,7 @@ public class turretGoPewPew  {
         //TODO somehow convert angle to servo pos prob by graphing points os servos poses and their angle to get line of best fit
         double pos=angle/slope;//slope is what i would get from graphing points for example it could be 30deg/0.1 pos and if my angle is 60 and
         // divide by slope i get servos pos 0.2
+        pos = Math.max(0.0, Math.min(1.0, pos)); //Make sure servo pos is between 0.0 and 1.0
         shotAngler.setPosition(pos);
     }
     //launcher
@@ -147,7 +148,7 @@ public class turretGoPewPew  {
     //aimer
     private double PID(int initPos,long targetPos,long time){
         long Error = targetPos-initPos;
-        if(time==0){
+        if(time<=0){
             time=1;
         }
         double errorChange=(Error-lastError)/time;
@@ -159,7 +160,7 @@ public class turretGoPewPew  {
         double ticksPerAng=(ticksFor1Rotation/360.0);
         double xLength=(goalx-botx);
         double yLength=(ygoal-boty);
-        double rawturrAngle=Math.toDegrees(Math.atan2(xLength,yLength));
+        double rawturrAngle=Math.toDegrees(Math.atan2(yLength,xLength));
         System.out.println("Turrangle with no robot heading: "+rawturrAngle);
         double turrAngle=rawturrAngle-botTheta;
         System.out.println("angle of turr: "+turrAngle);
