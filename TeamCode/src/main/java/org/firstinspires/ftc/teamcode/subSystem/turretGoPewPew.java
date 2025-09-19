@@ -58,23 +58,24 @@ public class turretGoPewPew  {
 
         turrMover.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
-    //indexing calc
-    private double indexingTimeofFli(double boty, double botx) {
-        double boty_conv=boty*0.0254;
+    //get xdistance
+    private double getxdistance(double boty, double botx){
+        double boty_conv=boty*0.0254;//convert into meter
         double botx_conv=botx*0.0254;
         double botdeltax=goalx-botx_conv;
         double botdeltay=ygoal-boty_conv;
         double xdistance=Math.sqrt(botdeltay*botdeltay+botdeltax*botdeltax);
+        return xdistance;
+    }
+    //indexing calc
+    private double indexingTimeofFli(double boty, double botx) {
+        double xdistance = getxdistance(boty,botx);
         double angle = Math.toRadians(idealAngle(boty, botx));
         double V = (idealpPow(boty, botx)-speedBoost)*maxSpeed;//convert pow back to vel
         return (xdistance / (V * Math.cos(angle))+delay);
     }
     public double indexingAng(double boty, double botx) {
-        double boty_conv=boty*0.0254;//convert in to m for calc
-        double botx_conv=botx*0.0254;
-        double botdeltax=goalx-botx_conv;
-        double botdeltay=ygoal-boty_conv;
-        double xdistance=Math.sqrt(botdeltay*botdeltay+botdeltax*botdeltax);
+        double xdistance = getxdistance(boty,botx);
         double timeOfFlight=indexingTimeofFli(boty,botx);
         double ydelta = goalHeight - turrHeight;
         double vy = (ydelta + 0.5 * 9.8 * timeOfFlight * timeOfFlight) / timeOfFlight;
@@ -83,11 +84,7 @@ public class turretGoPewPew  {
         return Math.toDegrees(angle);
     }
     private double indexingVel(double boty, double botx){
-        double boty_conv=boty*0.0254;//convert in to m for calc
-        double botx_conv=botx*0.0254;
-        double botdeltax=goalx-botx_conv;
-        double botdeltay=ygoal-boty_conv;
-        double xdistance=Math.sqrt(botdeltay*botdeltay+botdeltax*botdeltax);
+        double xdistance = getxdistance(boty,botx);
         double timeOfFlight=indexingTimeofFli(boty, botx);
         double ydelta = goalHeight - turrHeight;
         double vy = (ydelta + 0.5 * 9.8 * timeOfFlight * timeOfFlight) / timeOfFlight;
@@ -103,11 +100,7 @@ public class turretGoPewPew  {
     //angler
 
     private double idealAngle(double boty, double botx){
-        double boty_conv=boty*0.0254;//convert in to m for calc
-        double botx_conv=botx*0.0254;
-        double botdeltax=goalx-botx_conv;
-        double botdeltay=ygoal-boty_conv;
-        double xdistance=Math.sqrt(botdeltay*botdeltay+botdeltax*botdeltax);
+        double xdistance = getxdistance(boty,botx);
         double ydelta=goalHeight-turrHeight;
         double angOfElev=Math.atan(ydelta/xdistance);
         double angle=(Math.toRadians(90)+angOfElev)/2;
@@ -124,11 +117,7 @@ public class turretGoPewPew  {
     }
     //launcher
     private double idealpPow(double boty, double botx){
-        double boty_conv=boty*0.0254;//convert in to m for calc
-        double botx_conv=botx*0.0254;
-        double botdeltax=goalx-botx_conv;
-        double botdeltay=ygoal-boty_conv;
-        double xdistance=Math.sqrt(botdeltay*botdeltay+botdeltax*botdeltax);
+        double xdistance = getxdistance(boty,botx);
         double angle=Math.toRadians(idealAngle(boty,botx));
         double ydelta=goalHeight-turrHeight;
         double Vyt=(Math.tan(angle))*(xdistance);
@@ -156,13 +145,13 @@ public class turretGoPewPew  {
         lastError=Error;
         return ((kp*Error)+(ki*ErrorSum)+(kd*errorChange));
     }
-    private long targetpos(double botx, double boty, double botTheta){
+    private long targetpos(double botx, double boty, double botTheta){// for this to work we need to start with turret at 90 degree
         double ticksPerAng=(ticksFor1Rotation/360.0);
-        double xLength=(goalx-botx);
-        double yLength=(ygoal-boty);
+        double xLength=(goalx-(botx*0.0254));//convert to meter
+        double yLength=(ygoal-(boty*0.0254));
         double rawturrAngle=Math.toDegrees(Math.atan2(yLength,xLength));
         System.out.println("Turrangle with no robot heading: "+rawturrAngle);
-        double turrAngle=rawturrAngle-botTheta;
+        double turrAngle=-(rawturrAngle-botTheta);
         System.out.println("angle of turr: "+turrAngle);
         long ticks=Math.round(ticksPerAng*turrAngle);
         return ticks;
