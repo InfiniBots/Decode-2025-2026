@@ -15,18 +15,25 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 @Config
 public class TurrTest extends LinearOpMode {
     private DcMotorEx TurrMotor;
+    private DcMotorEx intakeStage1;
+    private DcMotorEx intakeStage2;
     public static double pow=1;
     public static double vel=0.5;
     public static boolean powering=true;
     public static double tickPerRev=29;
     public static int RPM=1150;
+    public static double intakePow=0.8;
 
     @Override
     public void runOpMode() {
-        TurrMotor = hardwareMap.get(DcMotorEx.class,"TurrMotor");
+        TurrMotor = hardwareMap.get(DcMotorEx.class,"Motor0");
+        intakeStage1 = hardwareMap.get(DcMotorEx.class,"Motor1");
+        intakeStage2= hardwareMap.get(DcMotorEx.class,"Motor2");
         TurrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         waitForStart();
         while (opModeIsActive()){
+            intakeStage1.setPower(intakePow);
+            intakeStage2.setPower(intakePow);
             if(powering) {
                 if (gamepad1.a) {
                     TurrMotor.setPower(pow);
