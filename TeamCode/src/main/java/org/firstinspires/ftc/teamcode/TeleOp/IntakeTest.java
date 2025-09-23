@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import android.annotation.SuppressLint;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -20,6 +22,7 @@ public class IntakeTest extends LinearOpMode {
     DcMotorEx Motor1;
     DcMotorEx Motor2;
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode() throws InterruptedException {
         Motor0 = hardwareMap.get(DcMotorEx.class, "Motor0");
@@ -28,6 +31,7 @@ public class IntakeTest extends LinearOpMode {
 
         //List<Double> timeStamps = new ArrayList<>();
         //List<Double> velocities = new ArrayList<>();
+        List<String> log = new ArrayList<>();
 
         ElapsedTime timer = new ElapsedTime();
         double lastTime = 0;
@@ -43,13 +47,18 @@ public class IntakeTest extends LinearOpMode {
             double now = timer.seconds();
             double velocity = Motor2.getVelocity();
 
-            if (now-lastTime >= 0.5) {
-                telemetry.addData("Time", "%.2f", now);
-                telemetry.addData("Velocity", "%.2f", velocity);
+            if (now - lastTime >= 0.5) {
+                log.add(String.format("t=%.2f  v=%.2f", now, velocity));
+                if (log.size() > 20) {
+                    log.remove(0);
+                }
+
+                for (String entry : log) {
+                    telemetry.addLine(entry);
+                }
                 telemetry.update();
                 lastTime = now;
             }
         }
     }
 }
-
