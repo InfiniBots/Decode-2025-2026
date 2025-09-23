@@ -49,7 +49,7 @@ public class IntakeTest extends LinearOpMode {
 
             if (now - lastTime >= 0.5) {
                 log.add(String.format("t=%.2f  v=%.2f", now, velocity));
-                if (log.size() > 20) {
+                if (log.size() > 40) {
                     log.remove(0);
                 }
 
