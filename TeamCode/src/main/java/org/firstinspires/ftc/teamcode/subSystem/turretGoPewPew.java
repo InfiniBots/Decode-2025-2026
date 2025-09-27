@@ -32,6 +32,7 @@ public class turretGoPewPew  {
     public static double slope=1;
     public static double delay=0.2;
     public static double maxSpeed=22.619467;//in m/s of our flywheel motor assuming it has 72mm diameter and 6k rpm like sushi said
+
     //pid
     public double ErrorSum=0;
     public double lastError=0;
@@ -58,7 +59,7 @@ public class turretGoPewPew  {
 
         turrMover.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
-    //get xdistance
+    //extras
     private double getxdistance(double boty, double botx){
         double boty_conv=boty*0.0254;//convert into meter
         double botx_conv=botx*0.0254;
@@ -71,7 +72,7 @@ public class turretGoPewPew  {
     private double indexingTimeofFli(double boty, double botx) {
         double xdistance = getxdistance(boty,botx);
         double angle = Math.toRadians(idealAngle(boty, botx));
-        double V = (idealpPow(boty, botx)-speedBoost)*maxSpeed;//convert pow back to vel
+        double V = (idealpPow(boty, botx));
         return (xdistance / (V * Math.cos(angle))+delay);
     }
     public double indexingAng(double boty, double botx) {
@@ -90,12 +91,13 @@ public class turretGoPewPew  {
         double vy = (ydelta + 0.5 * 9.8 * timeOfFlight * timeOfFlight) / timeOfFlight;
         double vx = xdistance / timeOfFlight;
         double V = Math.sqrt(vx*vx + vy*vy);
-        double power=V/maxSpeed;
-        power=power+speedBoost;
-        if(V>=maxSpeed){
-            power=1;
-        }
-        return power;
+        return V;
+//        double power=V/maxSpeed;
+//        power=power+speedBoost;
+//        if(V>=maxSpeed){
+//            power=1;
+//        }
+//        return power;
     }
     //angler
 
@@ -123,16 +125,19 @@ public class turretGoPewPew  {
         double Vyt=(Math.tan(angle))*(xdistance);
         double xcomp=Math.sqrt(1/((ydelta-Vyt)/(0.5*(-9.8)*xdistance*xdistance)));
         double V=xcomp/Math.cos(angle);
-        double power=V/maxSpeed;
-        power=power+speedBoost;
-        if(V>=maxSpeed){
-            power=1;
-        }
-        return power;
+        return V;
+//        double power=V/maxSpeed;
+//        power=power+speedBoost;
+//        if(V>=maxSpeed){
+//            power=1;
+//        }
+//        return power;
     }
-    public void launchPow(double boty, double botx, boolean isIndexing){
-        double pow=isIndexing?indexingVel(boty,botx):idealpPow(boty,botx);
-        mainFlyWheel.setPower(pow);
+    public void launchPow(double boty, double botx, boolean isIndexing) {
+        double V = isIndexing ? indexingVel(boty, botx) : idealpPow(boty, botx);
+        double metersPerRev = (V / ((72 * Math.PI) / 1000));
+        double velocity = ((metersPerRev) * 29);
+        mainFlyWheel.setVelocity(velocity);
     }
     //aimer
     private double PID(int initPos,long targetPos,long time){
