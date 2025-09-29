@@ -40,6 +40,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import java.util.List;
@@ -100,6 +101,20 @@ public class SensorLimelight3A extends LinearOpMode {
                     status.getPipelineIndex(), status.getPipelineType());
 
             LLResult result = limelight.getLatestResult();
+
+            // inside your loop or method
+            LLResult results = limelight.getLatestResult();
+            List<LLResultTypes.FiducialResult> fiducials = results.getFiducialResults();
+
+            if (!fiducials.isEmpty()) {
+                int fiducialId = fiducials.get(0).getFiducialId();
+                
+                if (fiducialId == 21) {
+                }
+                else if (fiducialId == 23) {
+                }
+            }
+
             if (result.isValid()) {
                 // Access general information
                 Pose3D botpose = result.getBotpose();
@@ -149,7 +164,7 @@ public class SensorLimelight3A extends LinearOpMode {
             } else {
                 telemetry.addData("Limelight", "No data available");
             }
-
+            
             telemetry.update();
         }
         limelight.stop();
