@@ -16,7 +16,7 @@ public class MotifLooking extends LinearOpMode {
     private Limelight3A limelight;
     private IMU imu;
     public void runOpMode() {
-        limelight = hardwareMap.get(Limelight3A.class, "All Parts");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
 
         LLResult result = limelight.getLatestResult();
