@@ -10,7 +10,7 @@ import com.bylazar.configurables.annotations.Configurable;
 
 @Autonomous
 @Configurable
-@SuppressWarnings("FieldCanBeLocal");
+@SuppressWarnings("FieldCanBeLocal")
 public class MotifLooking extends LinearOpMode {
 
     private Limelight3A limelight;
@@ -28,7 +28,7 @@ public class MotifLooking extends LinearOpMode {
             int id = fiducial.getFiducialId();
             double x = fiducial.getTargetXDegrees();
             double y = fiducial.getTargetYDegrees();
-            double distance = fiducial.getRobotPoseTargetSpace().getY();
+            double distance = fiducial.getRobotPoseTargetSpace().getPosition().y;
             telemetry.addData("Fiducial" + id, "is" + distance + " meters away");
             telemetry.update();
 
