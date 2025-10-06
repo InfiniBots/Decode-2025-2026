@@ -27,8 +27,8 @@ public class TurrTest extends LinearOpMode {
     public static double pow=1;
     public static boolean powering=false;
     public static double velocity_MperS=2;//ignore this for now
-    public static double intakePow=0.8;
-    public static int ticksPerSecond=2000;
+    public static double intakePow=1;
+    public static int ticksPerSecond=1700;
     private double velocity;
 
     @Override
