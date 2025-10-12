@@ -30,6 +30,24 @@ public class TurrTest extends LinearOpMode {
     public static double intakePow=1;
     public static int ticksPerSecond=1700;
     private double velocity;
+    //pid
+    public static boolean pid=true;
+    private double lastError=0;
+    private double ErrorSum=0;
+    private long lastTime=0;
+    public static double kp=0;
+    public static double kd=0;
+    public static double ki=0;
+    private double PID(double initPos,double targetPos,long time){
+        double Error = targetPos-initPos;
+        if(time<=0){
+            time=1;
+        }
+        double errorChange=(Error-lastError)/time;
+        ErrorSum+=(Error*time);
+        lastError=Error;
+        return ((kp*Error)+(ki*ErrorSum)+(kd*errorChange));
+    }
 
     @Override
     public void runOpMode() {
@@ -38,10 +56,12 @@ public class TurrTest extends LinearOpMode {
         TurrMotor = hardwareMap.get(DcMotorEx.class,"Motor3");
         intakeStage1 = hardwareMap.get(DcMotorEx.class,"Motor0");
         intakeStage2= hardwareMap.get(DcMotorEx.class,"Motor1");
-        TurrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);//gets encoder stuff
+        TurrMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//gets encoder stuff
         TurrMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         waitForStart();
+        lastTime=System.currentTimeMillis();
         while (opModeIsActive()){
+            long curTime=System.currentTimeMillis();
             if(gamepad1.b){
                 intakeStage1.setPower(intakePow);//sets intake power
                 intakeStage2.setPower(intakePow);//sets intake power
@@ -64,10 +84,20 @@ public class TurrTest extends LinearOpMode {
                     //diamter of wheel is 72mm so 72pi is circumference and 72pi/1000 to convert to meters
                     //this equals 0.22619467 meters per revolution
                     //then if given like 10 meters/s just do 10/0.22619467 to get revolutions needed per sec then multiply by 29 to convert to ticks
-                    double metersPerRev=(velocity_MperS/((72*Math.PI)/1000));//ignore
-                    velocity=((metersPerRev)*29);//ignore
-                    TurrMotor.setVelocity(ticksPerSecond);
-                    TurrMotor2.setVelocity(ticksPerSecond);
+                   // double metersPerRev=(velocity_MperS/((72*Math.PI)/1000));//ignore
+                    // velocity=((metersPerRev)*29);//ignore
+                    if (pid){
+                        TurrMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//gets encoder stuff
+                        long deltaTime=curTime-lastTime;
+                        lastTime=curTime;
+                        double pow=PID(TurrMotor.getVelocity(),ticksPerSecond,deltaTime);
+                        TurrMotor.setPower(pow);
+                        TurrMotor2.setPower(pow);
+                    }else {
+                        TurrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);//gets encoder stuff
+                        TurrMotor.setVelocity(ticksPerSecond);
+                        TurrMotor2.setVelocity(ticksPerSecond);
+                    }
                 } else {
                     TurrMotor.setVelocity(0);// sets to 0 when not pressed
                     TurrMotor2.setVelocity(0);
