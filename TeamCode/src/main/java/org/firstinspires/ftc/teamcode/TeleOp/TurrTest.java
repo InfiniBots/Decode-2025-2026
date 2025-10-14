@@ -1,20 +1,15 @@
-package org.firstinspires.ftc.teamcode;
-
-import android.graphics.Path;
+package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
 @TeleOp
@@ -27,8 +22,8 @@ public class TurrTest extends LinearOpMode {
     public static double pow=1;
     public static boolean powering=false;
     public static double velocity_MperS=2;//ignore this for now
-    public static double intakePow=1;
-    public static int ticksPerSecond=1700;
+    public static double intakePow=0.8;
+    public static int ticksPerSecond=2000;
     private double velocity;
     //pid
     public static boolean pid=true;
@@ -82,7 +77,7 @@ public class TurrTest extends LinearOpMode {
                 if (gamepad1.a) { //castrate gautam
                     //ignore this for now
                     //diamter of wheel is 72mm so 72pi is circumference and 72pi/1000 to convert to meters
-                    //this equals 0.22619467 meters per revolution
+                    //this equals 0.22619467 meters per revoluti    on
                     //then if given like 10 meters/s just do 10/0.22619467 to get revolutions needed per sec then multiply by 29 to convert to ticks
                    // double metersPerRev=(velocity_MperS/((72*Math.PI)/1000));//ignore
                     // velocity=((metersPerRev)*29);//ignore

@@ -35,13 +35,13 @@ public class LimelightHoming extends LinearOpMode {
         while (opModeIsActive()) {
             LLResult result = limelight.getLatestResult();
             List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+
             if (fiducials.isEmpty()) {
                 LLResultTypes.FiducialResult fiducial = fiducials.get(0);
 
                 double x = fiducial.getTargetXDegrees();
-                double y = fiducial.getTargetYDegrees();
 
-                double error = (x + y) / 2;
+                double error = x;
 
                 integral += error;
                 double derivative = error - lastError;
@@ -52,8 +52,7 @@ public class LimelightHoming extends LinearOpMode {
                 turretMotor.setPower(newPower);
 
                 telemetry.addData("Tracking ID: ", fiducial);
-                telemetry.addData("Target X: ", x);
-                telemetry.addData("Target Y: ", y);
+                telemetry.addData("Target X: ", x); 
                 telemetry.addData("Motor Power: ", newPower);
                 telemetry.update();
 
