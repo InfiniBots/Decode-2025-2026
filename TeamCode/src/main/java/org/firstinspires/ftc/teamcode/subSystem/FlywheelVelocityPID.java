@@ -33,8 +33,8 @@ public class FlywheelVelocityPID implements Subsystem {
     private static final double ticksPerRev = 28.0;
 
     public FlywheelVelocityPID(HardwareMap hardwareMap, Telemetry opModeTelemetry) {
-        MotorEx motor1 = new MotorEx("flywheel1");
-        MotorEx motor2 = new MotorEx("flywheel2").reversed();
+        MotorEx motor1 = new MotorEx("Motor0");
+        MotorEx motor2 = new MotorEx("Motor1").reversed();
         motors = new MotorGroup(motor1, motor2);
 
         this.telemetry = new MultipleTelemetry(opModeTelemetry, dashboard.getTelemetry());
