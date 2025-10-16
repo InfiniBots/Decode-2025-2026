@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.lang.reflect.Array;
@@ -20,6 +21,7 @@ public class turretGoPewPew  {
     private DcMotorEx mainFlyWheel;
     private Servo shotAngler;
     private RevColorSensorV3 colorSensor;
+    public Telemetry telemetry;
 
     //TODO tune like everything
     public boolean isRed;
@@ -31,7 +33,7 @@ public class turretGoPewPew  {
     public static int ticksFor1Rotation=10000;
     public static double slope=1;
     public static double delay=0.2;
-    public static double maxSpeed=22.619467;//in m/s of our flywheel motor assuming it has 72mm diameter and 6k rpm like sushi said
+    public static double ticksPerRev=28;
 
     //pid
     public double ErrorSum=0;
@@ -48,7 +50,8 @@ public class turretGoPewPew  {
     public static double purpleMax=330;
     public float[] hsv=new float[3];
 
-    public turretGoPewPew(LinearOpMode op, boolean isRed){
+    public turretGoPewPew(LinearOpMode op, boolean isRed, Telemetry telemetry){
+        this.telemetry=telemetry;
         this.isRed=isRed;
         goalx=isRed?136*0.0254:11*0.0254;
         turrMover = op.hardwareMap.get(DcMotorEx.class,"turrMover");
@@ -135,8 +138,8 @@ public class turretGoPewPew  {
     }
     public void launchPow(double boty, double botx, boolean isIndexing) {
         double V = isIndexing ? indexingVel(boty, botx) : idealpPow(boty, botx);
-        double metersPerRev = (V / ((72 * Math.PI) / 1000));
-        double velocity = ((metersPerRev) * 29);
+        double RevolutionPerSec = (V / ((72 * Math.PI) / 1000));
+        double velocity = ((RevolutionPerSec) * ticksPerRev);
         mainFlyWheel.setVelocity(velocity);
     }
     //aimer

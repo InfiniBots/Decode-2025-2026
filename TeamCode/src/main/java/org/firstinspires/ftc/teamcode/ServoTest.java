@@ -1,0 +1,37 @@
+package org.firstinspires.ftc.teamcode;
+
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
+
+@TeleOp
+@Config
+public class ServoTest extends LinearOpMode {
+    public Servo Stopper1;
+    public Servo Stopper2;
+    public static double stop1=0.5;
+    public static double stop2=0.3;
+    public static double syncpos=0.5;
+    public static boolean close=false;
+    public static double syncOffset=0;
+
+    @Override
+    public void runOpMode() {
+        Stopper1=hardwareMap.get(Servo.class,"Stopper1");
+        Stopper2=hardwareMap.get(Servo.class,"Stopper2");
+        waitForStart();
+        while (opModeIsActive()){
+
+//close is 0.6 and 0.53(limelight side)
+// open is 0.45 and 0.7
+            if(close){
+                Stopper1.setPosition(0.6);
+                Stopper2.setPosition(0.53);
+            }else{
+                Stopper1.setPosition(0.45);
+                Stopper2.setPosition(0.7);
+            }
+        }
+    }
+}
