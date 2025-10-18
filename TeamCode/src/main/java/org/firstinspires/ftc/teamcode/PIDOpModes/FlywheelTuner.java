@@ -15,8 +15,6 @@ public class FlywheelTuner extends NextFTCOpMode {
     private FlywheelVelocityPID flywheel;
     public static double targetRPM = 3000.0;
 
-    Button gamepad1a = button(() -> gamepad1.a);
-    Button gamepad1b = button(() -> gamepad1.b);
     @Override
     public void onInit() {
         flywheel = new FlywheelVelocityPID(hardwareMap, telemetry);
@@ -24,8 +22,8 @@ public class FlywheelTuner extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
-        gamepad1a.whenBecomesTrue(flywheel.runToRPM(targetRPM));
-        gamepad1b.whenBecomesTrue(flywheel.stop());
+        button(() -> gamepad1.a).whenBecomesTrue(flywheel.runToRPM(targetRPM));
+        button(() -> gamepad1.b).whenBecomesTrue(flywheel.stop());
     }
 
     @Override

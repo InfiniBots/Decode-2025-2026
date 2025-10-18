@@ -7,6 +7,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import dev.nextftc.control.builder.ControlSystemBuilderKt;
 import dev.nextftc.core.subsystems.Subsystem;
@@ -21,6 +22,8 @@ import dev.nextftc.control.KineticState;
 public class FlywheelVelocityPID implements Subsystem {
 
     private MotorGroup motors;
+    private MotorEx topFlywheel;
+    private MotorEx bottomFlywheel;
     private Telemetry telemetry;
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -33,9 +36,9 @@ public class FlywheelVelocityPID implements Subsystem {
     private static final double ticksPerRev = 28.0;
 
     public FlywheelVelocityPID(HardwareMap hardwareMap, Telemetry opModeTelemetry) {
-        MotorEx motor1 = new MotorEx("Motor0");
-        MotorEx motor2 = new MotorEx("Motor1").reversed();
-        motors = new MotorGroup(motor1, motor2);
+        topFlywheel = new MotorEx("TopFlywheel");
+        bottomFlywheel = new MotorEx("BottomFlywheel").reversed();
+        motors = new MotorGroup(topFlywheel, bottomFlywheel);
 
         this.telemetry = new MultipleTelemetry(opModeTelemetry, dashboard.getTelemetry());
     }
@@ -55,12 +58,16 @@ public class FlywheelVelocityPID implements Subsystem {
         double currentRPM = ticksToRpm(currentVel);
         double error = targetVel - currentVel;
         double power = motors.getPower();
+        double topFlywheelCurrent = topFlywheel.getMotor().getCurrent(CurrentUnit.AMPS);
+        double bottomFlywheelCurrent = bottomFlywheel.getMotor().getCurrent(CurrentUnit.AMPS);
         boolean atTarget = atTargetVelocity();
 
         telemetry.addData("=== FLYWHEEL ===", "");
         telemetry.addData("Target Velocity", "%.1f TPS (%.1f RPM)", targetVel, targetRPM);
         telemetry.addData("Current Velocity", "%.1f TPS (%.1f RPM)", currentVel, currentRPM);
         telemetry.addData("Error", "%.1f TPS", error);
+        telemetry.addData("Top Flywheel Current", "%.2f A", topFlywheelCurrent);
+        telemetry.addData("Bottom Flywheel Current", "%.2f A", bottomFlywheelCurrent);
         telemetry.addData("Motor Power", "%.3f", power);
         telemetry.addData("At Target", atTarget ? "Yupdeedoo" : "Uh oh spaghetti oh");
         telemetry.addLine();
