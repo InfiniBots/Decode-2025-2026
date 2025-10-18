@@ -24,20 +24,18 @@ public class LimelightDistance extends OpMode {
     public void loop() {
         LLResult llResult = limelight.getLatestResult();
         if (llResult != null && llResult.isValid()) {
-            Pose3D botpose = llResult.getBotpose_MT2();
             distance = distanceAprilTag(llResult.getTa());
             telemetry.addData("Distance", distance);
             telemetry.addData("Target X", llResult.getTx());
             telemetry.addData("Target Area", llResult.getTa());
-            telemetry.addData("Botpose", botpose.toString());
         }
 
 
     }
 
     public double distanceAprilTag(double ta) {
-        double scale = 0; // value requires fine tuning will do later
-        double distance = (scale/ta);
+        double scale = 30692.95; // value requires fine tuning will do later
+        double distance = Math.sqrt(scale/ta) + 2;
         return distance;
     }
 }
