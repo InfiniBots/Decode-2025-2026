@@ -15,7 +15,7 @@ public class Turrrrrrrrrreeeeeeeeetttttttt implements Subsystem {
     private final MotorEx turretMotor;
     public static double degrees90 = 90.0;
     public static double degrees45 = 45.0;
-    public static double ticksPerDegree = 28.0 * 3.0 / 360.0;
+    public static double ticksPerDegree = 384.5 / 360.0;
     public static double motorPower = 0.5;
     private double currentTargetDegrees = 0.0;
 
