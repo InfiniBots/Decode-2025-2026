@@ -172,7 +172,7 @@ public class turretGoPewPew  {
     }
 
     //color stuff
-    public boolean fullCheck(){
+   /* public boolean fullCheck(){
         return colorSensor.getDistance(DistanceUnit.MM)<fullThreshold;
     }
     public String colorCheck(){
@@ -199,5 +199,5 @@ public class turretGoPewPew  {
             ballColor="unknown";
         }
         return ballColor;
-    }
+    }*/
 }

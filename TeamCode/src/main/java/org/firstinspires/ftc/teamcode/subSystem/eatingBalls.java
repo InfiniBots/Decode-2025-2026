@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -13,39 +14,41 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import java.lang.reflect.Array;
 
 public class eatingBalls {
-    private DcMotorEx intakeStage1;
-    private DcMotorEx intakeStage2;
-    private Servo intakeStop;
+    private DcMotorEx intake;
+    private Servo intakeStop1;
+    private Servo intakeStop2;
     public Telemetry telemetry;
 
-    public static double intakePow=0.8;
-    public static double outtakePow=-0.8;
-    public static double holdBalls=0.1;
-    public static double intakeClosePos=0.5;
-    public static double intakeOpenPos=0.5;
+    public static double intakePow=-1;
+    public static double outtakePow=1;
+    public static double intakeClosePos1=0.62;
+    public static double intakeOpenPos1=0.77;
+    public static double intakeClosePos2=0.56;
+    public static double intakeOpenPos2=0.7;
 
     public eatingBalls(LinearOpMode op, Telemetry telemetry){
         this.telemetry=telemetry;
-        intakeStage1 = op.hardwareMap.get(DcMotorEx.class,"intake1");
-        intakeStage2 = op.hardwareMap.get(DcMotorEx.class,"intake2");
-        intakeStop = op.hardwareMap.get(Servo.class,"intakeStop");
+        intake = op.hardwareMap.get(DcMotorEx.class,"Intake");
+        intakeStop1 = op.hardwareMap.get(Servo.class,"Stopper1");
+        intakeStop2 = op.hardwareMap.get(Servo.class,"Stopper2");
+
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void intaking(){
-        intakeStage1.setPower(intakePow);
-        intakeStage2.setPower(intakePow);
+        intake.setPower(intakePow);
     }
     public void outtaking(){//idk when u would use this but maybe if u alr have 3 balls ig
-        intakeStage1.setPower(outtakePow);
-        intakeStage2.setPower(outtakePow);
+        intake.setPower(outtakePow);
     }
-    public void holdintakenBalls(){//after intaking we hold the balls in
-        intakeStage1.setPower(holdBalls);
-        intakeStage2.setPower(holdBalls);
+    public void chilling(){//intake not moving
+        intake.setPower(0);
     }
     public void intakeClose(){//stop intaken balls going into shooter
-        intakeStop.setPosition(intakeClosePos);
+        intakeStop1.setPosition(intakeClosePos1);
+        intakeStop1.setPosition(intakeClosePos2);
     }
     public void intakeOpen(){//allow intaken balls going into shooter
-        intakeStop.setPosition(intakeOpenPos);
+        intakeStop1.setPosition(intakeOpenPos1);
+        intakeStop1.setPosition(intakeOpenPos2);
     }
 }
