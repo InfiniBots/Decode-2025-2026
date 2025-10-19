@@ -17,7 +17,6 @@ import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 
-@Configurable
 @Config
 public class FlywheelVelocityPID implements Subsystem {
 

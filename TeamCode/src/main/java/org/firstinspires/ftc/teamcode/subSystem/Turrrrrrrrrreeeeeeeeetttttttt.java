@@ -22,6 +22,7 @@ public class Turrrrrrrrrreeeeeeeeetttttttt implements Subsystem {
     public Turrrrrrrrrreeeeeeeeetttttttt(HardwareMap hardwareMap) {
         turretMotor = new MotorEx("Turret").zeroed();
         turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretMotor.setCurrentPosition(0);
         turretMotor.getMotor().setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turretMotor.getMotor().setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
