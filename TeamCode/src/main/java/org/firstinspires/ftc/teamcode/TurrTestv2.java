@@ -27,16 +27,19 @@ public class TurrTestv2 extends LinearOpMode {
     private long deltaTime;
 
     //PID stuff
-    //private PIDFController PIDF;
-    public static double kp = 0.0;
-    public static double ki = 0.0;
-    public static double kd = 0.0;
-    public static double kf = 0.0;
+    private PIDFController PIDF;
+    private DcMotorEx intakeStage1;
+
+    public static double kp = 0.0009;
+    public static double ki = 0.0000001;
+    public static double kd = 0.09;
+    public static double kf = 0.00055;
     private double lastError = 0;
+
     private double errorSum = 0;
     private long lastTime = 0;
 
-    private double PID(double currentVelocity, double targetVelocity, long time) {
+    public double PID(double currentVelocity, double targetVelocity, long time) {
         double error = targetVelocity - currentVelocity;
         if (time <= 0) {
             time = 1;
@@ -54,9 +57,11 @@ public class TurrTestv2 extends LinearOpMode {
     @Override
     public void runOpMode() {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        //PIDF = new PIDFController(kp,ki,kd,kf);
+       // PIDF = new PIDFController(kp,ki,kd,kf);
         TurrMotor = hardwareMap.get(DcMotorEx.class, "TopFlywheel");
         TurrMotor2 = hardwareMap.get(DcMotorEx.class, "BottomFlywheel");
+        intakeStage1 = hardwareMap.get(DcMotorEx.class,"Intake");
+
 
         TurrMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         TurrMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -67,8 +72,7 @@ public class TurrTestv2 extends LinearOpMode {
 
         while (opModeIsActive()) {
             currTime = System.currentTimeMillis();
-            //PIDF.setPIDF(kp,ki,kd,kf);
-           // double pidPow=PIDF.calculate(TurrMotor.getVelocity(),ticksPerSecond);
+            intakeStage1.setPower(gamepad1.left_stick_y);
             if (gamepad1.a) {
                 deltaTime = currTime - lastTime;
                 double power = PID(TurrMotor.getVelocity(), ticksPerSecond, deltaTime);

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.subSystem;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -16,21 +15,20 @@ import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
-
+import dev.nextftc.core.commands.Command;
 @Config
 public class FlywheelVelocityPID implements Subsystem {
 
-    private MotorGroup motors;
-    private MotorEx topFlywheel;
-    private MotorEx bottomFlywheel;
-    private Telemetry telemetry;
+    private final MotorGroup motors;
+    private final MotorEx topFlywheel;
+    private final MotorEx bottomFlywheel;
+    private final Telemetry telemetry;
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
+    private ControlSystem controlSystem;
 
-    private ControlSystem lastControlSystem = null;
-
-    public static double kP = 0.0;
+    public static double kP = 0.0001;
     public static double kD = 0.0;
-    public static double kV = 0.0;
+    public static double kV = 0.0002;
     public static double velocityTolerance = 20.0;
     private static final double ticksPerRev = 28.0;
 
@@ -38,20 +36,27 @@ public class FlywheelVelocityPID implements Subsystem {
         topFlywheel = new MotorEx("TopFlywheel");
         bottomFlywheel = new MotorEx("BottomFlywheel").reversed();
         motors = new MotorGroup(topFlywheel, bottomFlywheel);
-
         this.telemetry = new MultipleTelemetry(opModeTelemetry, dashboard.getTelemetry());
+        rebuildControlSystem();
+    }
+
+    private void rebuildControlSystem() {
+        controlSystem = ControlSystemBuilderKt.controlSystem(builder -> {
+            builder.velPid(kP, 0.0, kD);
+            builder.basicFF(kV, 0.0, 0.0);
+            return null;
+        });
     }
 
     @Override
     public void periodic() {
-        // Update telemetry every loop
-        if (telemetry != null && lastControlSystem != null) {
-            updateTelemetry();
-        }
+        motors.setPower(controlSystem.calculate(motors.getState()));
+
+        updateTelemetry();
     }
 
     private void updateTelemetry() {
-        double targetVel = lastControlSystem.getGoal().getVelocity();
+        double targetVel = controlSystem.getGoal().getVelocity();
         double currentVel = motors.getState().getVelocity();
         double targetRPM = ticksToRpm(targetVel);
         double currentRPM = ticksToRpm(currentVel);
@@ -85,55 +90,37 @@ public class FlywheelVelocityPID implements Subsystem {
         dashboard.getTelemetry().update();
     }
 
-    // Main command - run flywheel at target velocity (ticks per second)
-    public RunToVelocity runToVelocity(double velocityTPS) {
-        ControlSystem controlSystem = ControlSystemBuilderKt.controlSystem(builder -> {
-            builder.velPid(kP, 0.0, kD);  // Velocity PID
-            builder.basicFF(kV);           // Feedforward
-            return null;
-        });
-        lastControlSystem = controlSystem;
-        return (RunToVelocity) new RunToVelocity(controlSystem, velocityTPS, velocityTolerance).requires(this);
+    public Command runToVelocity(double velocityTPS) {
+        rebuildControlSystem();
+        return new RunToVelocity(controlSystem, velocityTPS, velocityTolerance).requires(this);
     }
 
-    // Run with custom tolerance
-    public RunToVelocity runToVelocity(double velocityTPS, double tolerance) {
-        ControlSystem controlSystem = ControlSystemBuilderKt.controlSystem(builder -> {
-            builder.velPid(kP, 0.0, kD);
-            builder.basicFF(kV);
-            return null;
-        });
-        lastControlSystem = controlSystem;
-        return (RunToVelocity) new RunToVelocity(controlSystem, velocityTPS, tolerance).requires(this);
+    public Command runToVelocity(double velocityTPS, double tolerance) {
+        rebuildControlSystem();
+        return new RunToVelocity(controlSystem, velocityTPS, tolerance).requires(this);
     }
 
-    // Run flywheel at RPM (easier to understand than ticks)
-    public RunToVelocity runToRPM(double rpm) {
+    public Command runToRPM(double rpm) {
         return runToVelocity(rpmToTicks(rpm));
     }
 
-    // Run to RPM with custom tolerance
-    public RunToVelocity runToRPM(double rpm, double tolerance) {
+    public Command runToRPM(double rpm, double tolerance) {
         return runToVelocity(rpmToTicks(rpm), tolerance);
     }
 
-    // Stop the flywheel
-    public RunToVelocity stop() {
+    public Command stop() {
         return runToVelocity(0.0);
     }
 
-    // Check if at target velocity
     public boolean atTargetVelocity() {
-        if (lastControlSystem == null) return false;
         KineticState tolerance = new KineticState(
                 Double.POSITIVE_INFINITY,
                 velocityTolerance,
                 Double.POSITIVE_INFINITY
         );
-        return lastControlSystem.isWithinTolerance(tolerance);
+        return controlSystem.isWithinTolerance(tolerance);
     }
 
-    // Getters for telemetry/debugging
     public double getCurrentVelocityTPS() {
         return motors.getState().getVelocity();
     }
@@ -142,7 +129,6 @@ public class FlywheelVelocityPID implements Subsystem {
         return ticksToRpm(getCurrentVelocityTPS());
     }
 
-    // Conversion helpers
     private double rpmToTicks(double rpm) {
         return (rpm * ticksPerRev) / 60.0;
     }

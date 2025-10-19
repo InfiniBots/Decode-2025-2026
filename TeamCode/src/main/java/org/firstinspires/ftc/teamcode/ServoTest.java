@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class ServoTest extends LinearOpMode {
     public Servo Stopper1;
     public Servo Stopper2;
-    public static double stop1=0.5;
-    public static double stop2=0.3;
+    public static double stop1=0.77;
+    public static double stop2=0.7;
     public static double syncpos=0.5;
     public static boolean close=false;
     public static double syncOffset=0;
