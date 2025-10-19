@@ -24,6 +24,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor frontRight;
         private DcMotor rearLeft;
         private DcMotor rearRight;
+        private boolean readyForIntake;
 
         public static double kp = 0.0;
         public static double ki = 0.0;
@@ -109,6 +110,15 @@ import dev.nextftc.hardware.impl.MotorEx;
 
             while (opModeIsActive()){
                 telemetry.addData("State: ", state);
+                telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
+                telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
+                telemetry.addData("Control Stick Right Y: ", -gamepad1.right_stick_y);
+                telemetry.addData("Button A: ", gamepad1.a);
+                telemetry.addData("Button B: ", gamepad1.b);
+                telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
+                telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
+                telemetry.update();
+
                 switch (state) {
                     case GENERAL_MOVEMENT:
                         double y = -gamepad1.left_stick_y;
@@ -122,15 +132,20 @@ import dev.nextftc.hardware.impl.MotorEx;
                         rearRight.setPower((y + x - rx) / denominator);
 
                         if (gamepad1.a) {
+                            readyForIntake = true;
                             if (-gamepad1.right_stick_y >= 0) { // this exists to ensure there isnt a negative value for the motor.
                                 intakeMotor.setPower(-gamepad1.right_stick_y); // negative cuz iirc y up is neg down is pos for wtv rzn
                             }
                         } else if (gamepad1.b) {
+                            readyForIntake = false;
                             intakeMotor.setPower(0);
                         }
                         if (gamepad1.right_bumper){
                             state = State.PEW_PEW;
                         }
+                        telemetry.addData("Intake: ", readyForIntake);
+                        telemetry.addData("Power: ", -gamepad1.right_stick_y);
+
 
 
                         break;
