@@ -24,7 +24,10 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor frontRight;
         private DcMotor rearLeft;
         private DcMotor rearRight;
+        private DcMotor urmom;
         private boolean readyForIntake;
+        public double bottomRange = 0.0;
+        public double upperRange = 359.9;
 
         public static double kp = 0.0;
         public static double ki = 0.0;
@@ -119,6 +122,17 @@ import dev.nextftc.hardware.impl.MotorEx;
                 rearLeft.setPower((y - x - rx) / denominator);
                 rearRight.setPower((y + x - rx) / denominator);
 
+                if (gamepad1.left_trigger > 0){
+                    frontLeft.setPower(gamepad1.left_trigger);
+                    rearLeft.setPower(gamepad1.left_trigger);
+                    frontRight.setPower(-gamepad1.left_trigger);
+                    rearRight.setPower(-gamepad1.left_trigger);
+                } else if (gamepad1.right_trigger > 0){
+                    frontLeft.setPower(-gamepad1.right_trigger);
+                    rearLeft.setPower(-gamepad1.right_trigger);
+                    frontRight.setPower(gamepad1.right_trigger);
+                    rearRight.setPower(gamepad1.right_trigger);
+                }
                 telemetry.addData("State: ", state);
                 telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
                 telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
@@ -127,6 +141,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                 telemetry.addData("Button B: ", gamepad1.b);
                 telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
                 telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
+                telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
+                telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
                 telemetry.update();
 
                 switch (state) {
