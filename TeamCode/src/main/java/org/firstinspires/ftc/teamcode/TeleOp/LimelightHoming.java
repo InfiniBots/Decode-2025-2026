@@ -24,7 +24,7 @@ public class LimelightHoming extends LinearOpMode {
     private double lastError = 0;
 
     public void runOpMode() {
-        turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
+        turretMotor = hardwareMap.get(DcMotorEx.class, "Turret");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
