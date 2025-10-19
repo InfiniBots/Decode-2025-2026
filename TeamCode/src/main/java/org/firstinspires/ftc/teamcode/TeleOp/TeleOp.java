@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -24,7 +25,6 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor frontRight;
         private DcMotor rearLeft;
         private DcMotor rearRight;
-        private DcMotor urmom;
         private boolean readyForIntake;
         public double bottomRange = 0.0;
         public double upperRange = 359.9;
@@ -76,6 +76,8 @@ import dev.nextftc.hardware.impl.MotorEx;
             rearLeft = hardwareMap.dcMotor.get("rearLeft");
             rearRight = hardwareMap.dcMotor.get("rearRight");
 
+            IMU imu = hardwareMap.get(IMU.class, "imu");
+
             TopFlywheel = hardwareMap.get(DcMotorEx.class, "TopFlywheel");
             BottomFlywheel = hardwareMap.get(DcMotorEx.class, "BottomFlywheel");
             TopFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -114,7 +116,7 @@ import dev.nextftc.hardware.impl.MotorEx;
             while (opModeIsActive()){
                 double y = -gamepad1.left_stick_y;
                 double x = gamepad1.left_stick_x * 1.1;
-                double rx = gamepad1.left_stick_x;
+                double rx = gamepad1.right_stick_x;
                 double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
                 frontLeft.setPower((y + x + rx) / denominator);
@@ -122,16 +124,6 @@ import dev.nextftc.hardware.impl.MotorEx;
                 rearLeft.setPower((y - x - rx) / denominator);
                 rearRight.setPower((y + x - rx) / denominator);
 
-                if (gamepad1.left_trigger > 0){
-                    frontLeft.setPower(gamepad1.left_trigger);
-                    rearLeft.setPower(gamepad1.left_trigger);
-                    frontRight.setPower(-gamepad1.left_trigger);
-                    rearRight.setPower(-gamepad1.left_trigger);
-                } else if (gamepad1.right_trigger > 0){
-                    frontLeft.setPower(-gamepad1.right_trigger);
-                    rearLeft.setPower(-gamepad1.right_trigger);
-                    frontRight.setPower(gamepad1.right_trigger);
-                    rearRight.setPower(gamepad1.right_trigger);
                 }
                 telemetry.addData("State: ", state);
                 telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
@@ -201,7 +193,6 @@ import dev.nextftc.hardware.impl.MotorEx;
 
 
 
-            }
 
 
 
