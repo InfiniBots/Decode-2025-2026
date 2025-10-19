@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.subSystem.FlywheelVelocityPID;
 import org.firstinspires.ftc.teamcode.subSystem.Intakooo;
 import org.firstinspires.ftc.teamcode.subSystem.Turrrrrrrrrreeeeeeeeetttttttt;
 
+import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
@@ -88,5 +89,11 @@ public class Dinks extends NextFTCOpMode {
         telemetry.addLine("Dpad L/R: Turret 90°");
         telemetry.addLine("A: Flywheel On | B: Flywheel Off");
         telemetry.addLine("RT: Intake | LT: Outtake");
+        BindingManager.update();
+    }
+
+    @Override
+    public void onStop()   {
+        BindingManager.reset();
     }
 }
