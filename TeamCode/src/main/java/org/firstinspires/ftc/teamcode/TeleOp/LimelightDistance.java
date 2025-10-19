@@ -23,6 +23,10 @@ public class LimelightDistance extends OpMode {
     @Override
     public void loop() {
         LLResult llResult = limelight.getLatestResult();
+        if (llResult == null) {
+
+
+        }
         if (llResult != null && llResult.isValid()) {
             distance = distanceAprilTag(llResult.getTa());
             telemetry.addData("Distance", distance);
