@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.util.InterpLUT;
+import com.pedropathing.control.Controller;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -25,6 +27,7 @@ public class TurrTestv2 extends LinearOpMode {
     private long deltaTime;
 
     //PID stuff
+    //private PIDFController PIDF;
     public static double kp = 0.0;
     public static double ki = 0.0;
     public static double kd = 0.0;
@@ -51,24 +54,27 @@ public class TurrTestv2 extends LinearOpMode {
     @Override
     public void runOpMode() {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        TurrMotor = hardwareMap.get(DcMotorEx.class, "Motor0");
-        TurrMotor2 = hardwareMap.get(DcMotorEx.class, "Motor1");
+        //PIDF = new PIDFController(kp,ki,kd,kf);
+        TurrMotor = hardwareMap.get(DcMotorEx.class, "TopFlywheel");
+        TurrMotor2 = hardwareMap.get(DcMotorEx.class, "BottomFlywheel");
 
         TurrMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         TurrMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        TurrMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        TurrMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         waitForStart();
         lastTime = System.currentTimeMillis();
 
         while (opModeIsActive()) {
             currTime = System.currentTimeMillis();
+            //PIDF.setPIDF(kp,ki,kd,kf);
+           // double pidPow=PIDF.calculate(TurrMotor.getVelocity(),ticksPerSecond);
             if (gamepad1.a) {
                 deltaTime = currTime - lastTime;
                 double power = PID(TurrMotor.getVelocity(), ticksPerSecond, deltaTime);
                 lastTime = currTime;
-                TurrMotor.setPower(power);
-                TurrMotor2.setPower(power);
+                TurrMotor.setPower(-power);
+                TurrMotor2.setPower(-power);
             } else {
                 TurrMotor.setPower(0);
                 TurrMotor2.setPower(0);

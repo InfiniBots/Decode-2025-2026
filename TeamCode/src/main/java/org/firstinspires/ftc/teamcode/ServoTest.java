@@ -23,15 +23,11 @@ public class ServoTest extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()){
 
-//close is 0.6 and 0.53(limelight side)
-// open is 0.45 and 0.7
-            if(close){
-                Stopper1.setPosition(0.6);
-                Stopper2.setPosition(0.53);
-            }else{
-                Stopper1.setPosition(0.45);
-                Stopper2.setPosition(0.7);
-            }
+//close is 0.62 and 0.56(limelight side)
+// open is 0.77 and 0.7
+            Stopper1.setPosition(stop1);
+            Stopper2.setPosition(stop2);
+
         }
     }
 }

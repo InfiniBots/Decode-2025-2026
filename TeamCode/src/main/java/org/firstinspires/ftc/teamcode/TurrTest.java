@@ -35,8 +35,8 @@ public class TurrTest extends LinearOpMode {
     @Override
     public void runOpMode() {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());//telem stuff
-        TurrMotor2 = hardwareMap.get(DcMotorEx.class,"Motor1");
-        TurrMotor = hardwareMap.get(DcMotorEx.class,"Motor0");
+        TurrMotor = hardwareMap.get(DcMotorEx.class, "TopFlywheel");
+        TurrMotor2 = hardwareMap.get(DcMotorEx.class, "BottomFlywheel");
         //intakeStage1 = hardwareMap.get(DcMotorEx.class,"Motor0");
         //intakeStage2= hardwareMap.get(DcMotorEx.class,"Motor1");
         TurrMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
