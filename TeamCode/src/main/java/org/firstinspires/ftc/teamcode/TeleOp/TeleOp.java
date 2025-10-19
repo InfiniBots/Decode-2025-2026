@@ -109,6 +109,16 @@ import dev.nextftc.hardware.impl.MotorEx;
 
 
             while (opModeIsActive()){
+                double y = -gamepad1.left_stick_y;
+                double x = gamepad1.left_stick_x * 1.1;
+                double rx = gamepad1.left_stick_x;
+                double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+
+                frontLeft.setPower((y + x + rx) / denominator);
+                frontRight.setPower((y - x + rx) / denominator);
+                rearLeft.setPower((y - x - rx) / denominator);
+                rearRight.setPower((y + x - rx) / denominator);
+
                 telemetry.addData("State: ", state);
                 telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
                 telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
@@ -121,15 +131,6 @@ import dev.nextftc.hardware.impl.MotorEx;
 
                 switch (state) {
                     case GENERAL_MOVEMENT:
-                        double y = -gamepad1.left_stick_y;
-                        double x = gamepad1.left_stick_x * 1.1;
-                        double rx = gamepad1.left_stick_x;
-                        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-
-                        frontLeft.setPower((y + x + rx) / denominator);
-                        frontRight.setPower((y - x + rx) / denominator);
-                        rearLeft.setPower((y - x - rx) / denominator);
-                        rearRight.setPower((y + x - rx) / denominator);
 
                         if (gamepad1.a) {
                             readyForIntake = true;
@@ -145,10 +146,9 @@ import dev.nextftc.hardware.impl.MotorEx;
                         }
                         telemetry.addData("Intake: ", readyForIntake);
                         telemetry.addData("Power: ", -gamepad1.right_stick_y);
-
-
-
+                        telemetry.update();
                         break;
+
                     case PEW_PEW:
                         currTime = System.currentTimeMillis();
                         if (gamepad1.a) {
