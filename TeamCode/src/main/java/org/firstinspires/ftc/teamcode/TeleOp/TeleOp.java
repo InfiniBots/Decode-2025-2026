@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -27,9 +28,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor rightFront;
         private DcMotor leftRear;
         private DcMotor rightRear;
-        private boolean readyForIntake;
-        public double bottomRange = 0.0;
-        public double upperRange = 359.9;
+        private PIDFController PIDF;
 
         public static double kp = 0.0;
         public static double ki = 0.0;
@@ -131,14 +130,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                 switch (state) {
                     case GENERAL_MOVEMENT:
 
-                        if (gamepad1.a) {
-                            readyForIntake = true;
-                                intakeMotor.setPower(gamepad1.right_trigger); // negative cuz iirc y up is neg down is pos for wtv rzn
-                            }
-                        } else if (gamepad1.b) {
-                            readyForIntake = false;
-                            intakeMotor.setPower(0);
-                        }
+                        intakeMotor.setPower(gamepad1.right_trigger); // negative cuz iirc y up is neg down is pos for wtv rzn
+
                         if (gamepad1.right_bumper) {
                             state = State.PEW_PEW;
                         }
@@ -156,8 +149,6 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
                         telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
                         telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
-                        telemetry.update();
-                        telemetry.addData("Intake: ", readyForIntake);
                         telemetry.addData("Power: ", -gamepad1.right_stick_y);
                         telemetry.addData("Stopper1 Position: ", 0.62);
                         telemetry.addData("Stopper2 Position: ", 0.57);
