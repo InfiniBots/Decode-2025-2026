@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -22,13 +24,11 @@ import dev.nextftc.hardware.impl.MotorEx;
     @com.qualcomm.robotcore.eventloop.opmode.TeleOp
     @Config
     public class TeleOp extends LinearOpMode {
-        private DcMotor frontLeft;
-        private DcMotor frontRight;
-        private DcMotor rearLeft;
-        private DcMotor rearRight;
-        private boolean readyForIntake;
-        public double bottomRange = 0.0;
-        public double upperRange = 359.9;
+        private DcMotor leftFront;
+        private DcMotor rightFront;
+        private DcMotor leftRear;
+        private DcMotor rightRear;
+        private PIDFController PIDF;
 
         public static double kp = 0.0;
         public static double ki = 0.0;
@@ -76,10 +76,11 @@ import dev.nextftc.hardware.impl.MotorEx;
         @Override
         public void runOpMode() throws InterruptedException {
             DcMotorEx intakeMotor = new MotorEx("Intake").zeroed().getMotor();
-            frontLeft = hardwareMap.dcMotor.get("frontLeft");
-            frontRight = hardwareMap.dcMotor.get("frontRight");
-            rearLeft = hardwareMap.dcMotor.get("rearLeft");
-            rearRight = hardwareMap.dcMotor.get("rearRight");
+            leftFront = hardwareMap.dcMotor.get("leftFront");
+            rightFront = hardwareMap.dcMotor.get("rightFront");
+            leftRear = hardwareMap.dcMotor.get("leftRear");
+            rightRear = hardwareMap.dcMotor.get("rightRear");
+            VoltageSensor Voltage = hardwareMap.voltageSensor.iterator().next();
 
             IMU imu = hardwareMap.get(IMU.class, "imu");
 
@@ -95,8 +96,8 @@ import dev.nextftc.hardware.impl.MotorEx;
             intakeMotor.setPower(0);
 
 
-            rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
             state = State.GENERAL_MOVEMENT;
 
@@ -119,36 +120,18 @@ import dev.nextftc.hardware.impl.MotorEx;
                 double rx = gamepad1.right_stick_x;
                 double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
-                frontLeft.setPower((y + x + rx) / denominator);
-                frontRight.setPower((y - x + rx) / denominator);
-                rearLeft.setPower((y - x - rx) / denominator);
-                rearRight.setPower((y + x - rx) / denominator);
+                leftFront.setPower((y + x + rx) / denominator);
+                rightFront.setPower((y - x + rx) / denominator);
+                leftRear.setPower((y - x - rx) / denominator);
+                rightRear.setPower((y + x - rx) / denominator);
 
 
-                telemetry.addData("State: ", state);
-                telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
-                telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
-                telemetry.addData("Control Stick Right Y: ", -gamepad1.right_stick_y);
-                telemetry.addData("Button A: ", gamepad1.a);
-                telemetry.addData("Button B: ", gamepad1.b);
-                telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
-                telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
-                telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
-                telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
-                telemetry.update();
 
                 switch (state) {
                     case GENERAL_MOVEMENT:
 
-                        if (gamepad1.a) {
-                            readyForIntake = true;
-                            if (-gamepad1.right_stick_y >= 0) { // this exists to ensure there isnt a negative value for the motor.
-                                intakeMotor.setPower(-gamepad1.right_stick_y); // negative cuz iirc y up is neg down is pos for wtv rzn
-                            }
-                        } else if (gamepad1.b) {
-                            readyForIntake = false;
-                            intakeMotor.setPower(0);
-                        }
+                        intakeMotor.setPower(gamepad1.right_trigger); // negative cuz iirc y up is neg down is pos for wtv rzn
+
                         if (gamepad1.right_bumper) {
                             state = State.PEW_PEW;
                         }
@@ -156,11 +139,19 @@ import dev.nextftc.hardware.impl.MotorEx;
                         Stopper1.setPosition(0.62);
                         Stopper2.setPosition(0.56);
 
-                        telemetry.addData("Intake: ", readyForIntake);
+                        telemetry.addData("State: ", state);
+                        telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
+                        telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
+                        telemetry.addData("Control Stick Right Y: ", -gamepad1.right_stick_y);
+                        telemetry.addData("Button A: ", gamepad1.a);
+                        telemetry.addData("Button B: ", gamepad1.b);
+                        telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
+                        telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
+                        telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
+                        telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
                         telemetry.addData("Power: ", -gamepad1.right_stick_y);
                         telemetry.addData("Stopper1 Position: ", 0.62);
                         telemetry.addData("Stopper2 Position: ", 0.57);
-
                         telemetry.update();
                         break;
 
@@ -168,7 +159,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                         currTime = System.currentTimeMillis();
                         if (gamepad1.a) {
                             deltaTime = currTime - lastTime;
-                            double power = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime);
+                            double power = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime)*(12.0/Voltage.getVoltage());
+                            power=Math.max(-1.0, Math.min(1.0, power));
                             lastTime = currTime;
                             TopFlywheel.setPower(-power);
                             BottomFlywheel.setPower(-power);
@@ -185,7 +177,16 @@ import dev.nextftc.hardware.impl.MotorEx;
                         Stopper2.setPosition(0.7);
 
 
-
+                        telemetry.addData("State: ", state);
+                        telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
+                        telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
+                        telemetry.addData("Control Stick Right Y: ", -gamepad1.right_stick_y);
+                        telemetry.addData("Button A: ", gamepad1.a);
+                        telemetry.addData("Button B: ", gamepad1.b);
+                        telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
+                        telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
+                        telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
+                        telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
                         telemetry.addData("TopFlywheel Velocity", TopFlywheel.getVelocity());
                         telemetry.addData("BottomFlywheel Velocity", BottomFlywheel.getVelocity());
                         telemetry.addData("Target Speed", ticksPerSecond);
@@ -195,6 +196,7 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Stopper1 Position: ", 0.77);
                         telemetry.addData("Stopper2 Position: ", 0.7);
                         telemetry.update();
+                        break;
 
 
                 }
