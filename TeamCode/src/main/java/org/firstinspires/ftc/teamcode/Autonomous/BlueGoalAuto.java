@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
@@ -9,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystem.FlywheelVelocityPID;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -41,6 +38,14 @@ import dev.nextftc.ftc.components.BulkReadComponent;
  */
 @Autonomous
 public class BlueGoalAuto extends NextFTCOpMode {
+
+    public BlueGoalAuto() {
+        addComponents(
+                new SubsystemComponent(flywheel),
+                BulkReadComponent.INSTANCE,
+                new PedroComponent(Constants::createFollower)
+        );
+    }
     private FlywheelVelocityPID flywheel;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -184,21 +189,6 @@ public class BlueGoalAuto extends NextFTCOpMode {
 
     private Command scoringCycle(PathChain pathToBall, PathChain pathToIntake, PathChain pathToShoot) {
         return new SequentialGroup(
-                new FollowPath(pathToBall),
-                new ParallelGroup(
-                        new FollowPath(pathToIntake)
-
-                ),
-
-                new Delay(intakeDelay),
-                new ParallelGroup(
-                        new FollowPath(pathToShoot),
-                        flywheel.runToRPM(shootRpm)
-                ),
-
-                new Delay(shootDelay),
-
-                new Delay(0.2)
         );
     }
 
@@ -210,13 +200,6 @@ public class BlueGoalAuto extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        flywheel = new FlywheelVelocityPID(hardwareMap, telemetry);
-        addComponents(
-                new SubsystemComponent(flywheel),
-                BulkReadComponent.INSTANCE,
-                new PedroComponent(Constants::createFollower)
-        );
-
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();

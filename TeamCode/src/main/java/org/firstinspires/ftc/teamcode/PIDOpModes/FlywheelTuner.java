@@ -17,17 +17,16 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 @Config
 @TeleOp
 public class FlywheelTuner extends NextFTCOpMode {
+    public FlywheelTuner() {
+        addComponents(
+                new SubsystemComponent(FlywheelVelocityPID.INSTANCE),
+                BulkReadComponent.INSTANCE,
+                BindingsComponent.INSTANCE);
+    }
     private FlywheelVelocityPID flywheel;
     public static double targetRPM = 3000.0;
-
     @Override
     public void onInit() {
-        flywheel = new FlywheelVelocityPID(hardwareMap, telemetry);
-        addComponents(
-                new SubsystemComponent(flywheel),
-                BulkReadComponent.INSTANCE,
-                BindingsComponent.INSTANCE
-        );
     }
 
     @Override
