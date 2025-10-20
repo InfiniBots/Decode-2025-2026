@@ -23,11 +23,11 @@ public class FlywheelVelocityPID implements Subsystem {
 
     public static final FlywheelVelocityPID INSTANCE = new FlywheelVelocityPID();
     private FlywheelVelocityPID() { }
-    private MotorEx topFlywheel = new MotorEx("TopFlywheel");
-    private MotorEx bottomFlywheel = new MotorEx("BottomFlywheel").reversed();
-    private MotorGroup motors = new MotorGroup(topFlywheel, bottomFlywheel);
+    public MotorEx topFlywheel;
+    public MotorEx bottomFlywheel;
+    public MotorGroup motors;
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
-    private ControlSystem controlSystem = ControlSystem.builder()
+    ControlSystem controlSystem = ControlSystem.builder()
             .velPid(kP, kI, kD)
             .basicFF(kV, 0.0, 0.0)
             .build();
@@ -37,6 +37,13 @@ public class FlywheelVelocityPID implements Subsystem {
     public static double kV = 0.0002;
     public static double velocityTolerance = 20.0;
     private static final double ticksPerRev = 28.0;
+
+    @Override
+    public void initialize() {
+        topFlywheel = new MotorEx("TopFlywheel");
+        bottomFlywheel = new MotorEx("BottomFlywheel").reversed();
+        motors = new MotorGroup(topFlywheel, bottomFlywheel);
+    }
 
     public Command runToVelocity(double velocityTPS) {
         return new RunToVelocity(controlSystem, velocityTPS, velocityTolerance).requires(this);
