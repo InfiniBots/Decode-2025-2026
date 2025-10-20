@@ -133,8 +133,7 @@ import dev.nextftc.hardware.impl.MotorEx;
 
                         if (gamepad1.a) {
                             readyForIntake = true;
-                            if (-gamepad1.right_stick_y >= 0) { // this exists to ensure there isnt a negative value for the motor.
-                                intakeMotor.setPower(-gamepad1.right_stick_y); // negative cuz iirc y up is neg down is pos for wtv rzn
+                                intakeMotor.setPower(gamepad1.right_trigger); // negative cuz iirc y up is neg down is pos for wtv rzn
                             }
                         } else if (gamepad1.b) {
                             readyForIntake = false;
@@ -162,7 +161,6 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Power: ", -gamepad1.right_stick_y);
                         telemetry.addData("Stopper1 Position: ", 0.62);
                         telemetry.addData("Stopper2 Position: ", 0.57);
-
                         telemetry.update();
                         break;
 
@@ -198,11 +196,6 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
                         telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
                         telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
-                        telemetry.update();
-
-
-
-
                         telemetry.addData("TopFlywheel Velocity", TopFlywheel.getVelocity());
                         telemetry.addData("BottomFlywheel Velocity", BottomFlywheel.getVelocity());
                         telemetry.addData("Target Speed", ticksPerSecond);
