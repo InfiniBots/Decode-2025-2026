@@ -76,8 +76,8 @@ import dev.nextftc.hardware.impl.MotorEx;
         @Override
         public void runOpMode() throws InterruptedException {
             DcMotorEx intakeMotor = new MotorEx("Intake").zeroed().getMotor();
-            leftFront = hardwareMap.dcMotor.get("frontLeft");
-            rightFront = hardwareMap.dcMotor.get("frontRight");
+            leftFront = hardwareMap.dcMotor.get("leftFront");
+            rightFront = hardwareMap.dcMotor.get("rightFront");
             leftRear = hardwareMap.dcMotor.get("rearLeft");
             rightRear = hardwareMap.dcMotor.get("rearRight");
 
