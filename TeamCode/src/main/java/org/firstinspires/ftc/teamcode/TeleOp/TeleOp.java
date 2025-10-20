@@ -67,7 +67,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         }
 
         void getVel() {// we doing in ft and tickspersecond
-            graph.add(1, 1);//need to add points (ts is random right now)
+            graph.add(  1, 1);//need to add points (ts is random right now)
             graph.createLUT();
         }
 
