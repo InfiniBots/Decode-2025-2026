@@ -78,8 +78,8 @@ import dev.nextftc.hardware.impl.MotorEx;
             DcMotorEx intakeMotor = new MotorEx("Intake").zeroed().getMotor();
             leftFront = hardwareMap.dcMotor.get("leftFront");
             rightFront = hardwareMap.dcMotor.get("rightFront");
-            leftRear = hardwareMap.dcMotor.get("rearLeft");
-            rightRear = hardwareMap.dcMotor.get("rearRight");
+            leftRear = hardwareMap.dcMotor.get("leftRear");
+            rightRear = hardwareMap.dcMotor.get("rightRear");
 
             IMU imu = hardwareMap.get(IMU.class, "imu");
 
