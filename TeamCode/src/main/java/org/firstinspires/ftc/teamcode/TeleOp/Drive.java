@@ -22,9 +22,8 @@ public class Drive{
         BackRight = op.hardwareMap.get(DcMotorEx.class,"rightRear");
         BackLeft = op.hardwareMap.get(DcMotorEx.class,"leftRear");
 
-        BackRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
         BackLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        FrontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         FrontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FrontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

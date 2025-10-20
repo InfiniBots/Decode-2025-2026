@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.TeleOp.Drive;
@@ -28,16 +29,20 @@ public class basicTestAll extends LinearOpMode {
     private DcMotorEx TurrMotor;
     private DcMotorEx intakeStage1;
     private DcMotorEx TurrMotor2;
+    private VoltageSensor Voltage;
     public static double intakePow=-1;
-    public static double ticksPSec=-1500;
+    public static double ticksPSec=1500;
     public static double chillTickPSec=0;
     public static double intakeShootPow=-1;
     private long currTime;
     private long deltaTime;
+    private double power;
     private double lastError = 0;
 
     private double errorSum = 0;
     private long lastTime = 0;
+    public static boolean shooterOn=false;
+    public static boolean intakeOn=false;
     public void closeStop(){
         Stopper1.setPosition(0.62);
         Stopper2.setPosition(0.56);
@@ -66,6 +71,7 @@ public class basicTestAll extends LinearOpMode {
         TurrMotor2 = hardwareMap.get(DcMotorEx.class,"BottomFlywheel");
         TurrMotor = hardwareMap.get(DcMotorEx.class,"TopFlywheel");
         intakeStage1 = hardwareMap.get(DcMotorEx.class,"Intake");
+        Voltage=hardwareMap.voltageSensor.iterator().next();
         TurrMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         TurrMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         TurrMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -77,17 +83,18 @@ public class basicTestAll extends LinearOpMode {
         while(opModeIsActive()){
             currTime = System.currentTimeMillis();
             drive.driveInputs(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
-            if(gamepad1.right_trigger>0.5){
+            if(gamepad1.right_trigger>0.5||intakeOn){
                 closeStop();
                 intakeStage1.setPower(intakePow);
                 telemetry.addData("Status: ","intaking");
-            }else{
+            }else if(!(gamepad1.a||shooterOn)){
                 intakeStage1.setPower(0);
             }
-            if (gamepad1.a) {
+            if (gamepad1.a||shooterOn) {
                 deltaTime = currTime - lastTime;
-                double power = PID(TurrMotor.getVelocity(), ticksPSec, deltaTime);
+                power = PID(TurrMotor.getVelocity(), ticksPSec, deltaTime)*(12.0/Voltage.getVoltage());
                 lastTime = currTime;
+                power=Math.max(-1.0, Math.min(1.0, power));
                 TurrMotor.setPower(-power);
                 TurrMotor2.setPower(-power);
                 telemetry.addData("Status: ","gaining speed");
@@ -99,8 +106,9 @@ public class basicTestAll extends LinearOpMode {
             } else {
                 closeStop();
                 deltaTime = currTime - lastTime;
-                double power = PID(TurrMotor.getVelocity(), chillTickPSec, deltaTime);
+                power = PID(TurrMotor.getVelocity(), chillTickPSec, deltaTime)*(12.0/Voltage.getVoltage());
                 lastTime = currTime;
+                power=Math.max(-1.0, Math.min(1.0, power));
                 TurrMotor.setPower(-power);
                 TurrMotor2.setPower(-power);
             }
