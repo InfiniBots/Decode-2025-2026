@@ -125,17 +125,6 @@ import dev.nextftc.hardware.impl.MotorEx;
                 rightRear.setPower((y + x - rx) / denominator);
 
 
-                telemetry.addData("State: ", state);
-                telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
-                telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
-                telemetry.addData("Control Stick Right Y: ", -gamepad1.right_stick_y);
-                telemetry.addData("Button A: ", gamepad1.a);
-                telemetry.addData("Button B: ", gamepad1.b);
-                telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
-                telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
-                telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
-                telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
-                telemetry.update();
 
                 switch (state) {
                     case GENERAL_MOVEMENT:
@@ -156,6 +145,17 @@ import dev.nextftc.hardware.impl.MotorEx;
                         Stopper1.setPosition(0.62);
                         Stopper2.setPosition(0.56);
 
+                        telemetry.addData("State: ", state);
+                        telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
+                        telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
+                        telemetry.addData("Control Stick Right Y: ", -gamepad1.right_stick_y);
+                        telemetry.addData("Button A: ", gamepad1.a);
+                        telemetry.addData("Button B: ", gamepad1.b);
+                        telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
+                        telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
+                        telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
+                        telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
+                        telemetry.update();
                         telemetry.addData("Intake: ", readyForIntake);
                         telemetry.addData("Power: ", -gamepad1.right_stick_y);
                         telemetry.addData("Stopper1 Position: ", 0.62);
@@ -185,6 +185,20 @@ import dev.nextftc.hardware.impl.MotorEx;
                         Stopper2.setPosition(0.7);
 
 
+                        telemetry.addData("State: ", state);
+                        telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
+                        telemetry.addData("Control Stick Left X: ", gamepad1.left_stick_x);
+                        telemetry.addData("Control Stick Right Y: ", -gamepad1.right_stick_y);
+                        telemetry.addData("Button A: ", gamepad1.a);
+                        telemetry.addData("Button B: ", gamepad1.b);
+                        telemetry.addData("Left Bumper: ", gamepad1.left_bumper);
+                        telemetry.addData("Right Bumper: ", gamepad1.right_bumper);
+                        telemetry.addData("Left Trigger: ", gamepad1.left_trigger);
+                        telemetry.addData("Right Trigger: ", gamepad1.right_trigger);
+                        telemetry.update();
+
+
+
 
                         telemetry.addData("TopFlywheel Velocity", TopFlywheel.getVelocity());
                         telemetry.addData("BottomFlywheel Velocity", BottomFlywheel.getVelocity());
@@ -195,6 +209,7 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Stopper1 Position: ", 0.77);
                         telemetry.addData("Stopper2 Position: ", 0.7);
                         telemetry.update();
+                        break;
 
 
                 }
