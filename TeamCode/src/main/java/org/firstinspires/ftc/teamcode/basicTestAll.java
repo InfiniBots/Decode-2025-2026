@@ -113,6 +113,7 @@ public class basicTestAll extends LinearOpMode {
                 TurrMotor2.setPower(-power);
             }
             telemetry.addData("TurrMotor vel: ",TurrMotor.getVelocity());
+            telemetry.addData("Target Speed", ticksPSec);
             telemetry.update();
         }
     }

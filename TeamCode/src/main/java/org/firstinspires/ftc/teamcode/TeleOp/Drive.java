@@ -15,7 +15,8 @@ public class Drive{
     public double FL=0.0;
     public double BR=0.0;
     public double BL=0.0;
-    public static double strafingOffest=1;
+    public static double strafingOffest=1.1;
+    public static double rotationAdjustment=0.8;
     public Drive(LinearOpMode op){
         FrontRight = op.hardwareMap.get(DcMotorEx.class,"rightFront");
         FrontLeft = op.hardwareMap.get(DcMotorEx.class,"leftFront");
@@ -32,6 +33,7 @@ public class Drive{
     }
     public void driveInputs(double x, double y, double theta){
         x = x * strafingOffest;
+        theta=theta * rotationAdjustment;
         FR = (y-x-theta);
         BR = (y+x-theta);
         FL = (y+x+theta);
