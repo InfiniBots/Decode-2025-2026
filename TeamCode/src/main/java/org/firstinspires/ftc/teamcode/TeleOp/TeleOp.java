@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -80,6 +81,7 @@ import dev.nextftc.hardware.impl.MotorEx;
             rightFront = hardwareMap.dcMotor.get("rightFront");
             leftRear = hardwareMap.dcMotor.get("leftRear");
             rightRear = hardwareMap.dcMotor.get("rightRear");
+            VoltageSensor Voltage = hardwareMap.voltageSensor.iterator().next();
 
             IMU imu = hardwareMap.get(IMU.class, "imu");
 
@@ -168,7 +170,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                         currTime = System.currentTimeMillis();
                         if (gamepad1.a) {
                             deltaTime = currTime - lastTime;
-                            double power = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime);
+                            double power = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime)*(12.0/Voltage.getVoltage());
+                            power=Math.max(-1.0, Math.min(1.0, power));
                             lastTime = currTime;
                             TopFlywheel.setPower(-power);
                             BottomFlywheel.setPower(-power);
