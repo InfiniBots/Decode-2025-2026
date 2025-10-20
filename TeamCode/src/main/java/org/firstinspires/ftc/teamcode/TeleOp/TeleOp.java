@@ -22,10 +22,10 @@ import dev.nextftc.hardware.impl.MotorEx;
     @com.qualcomm.robotcore.eventloop.opmode.TeleOp
     @Config
     public class TeleOp extends LinearOpMode {
-        private DcMotor frontLeft;
-        private DcMotor frontRight;
-        private DcMotor rearLeft;
-        private DcMotor rearRight;
+        private DcMotor leftFront;
+        private DcMotor rightFront;
+        private DcMotor leftRear;
+        private DcMotor rightRear;
         private boolean readyForIntake;
         public double bottomRange = 0.0;
         public double upperRange = 359.9;
@@ -76,10 +76,10 @@ import dev.nextftc.hardware.impl.MotorEx;
         @Override
         public void runOpMode() throws InterruptedException {
             DcMotorEx intakeMotor = new MotorEx("Intake").zeroed().getMotor();
-            frontLeft = hardwareMap.dcMotor.get("frontLeft");
-            frontRight = hardwareMap.dcMotor.get("frontRight");
-            rearLeft = hardwareMap.dcMotor.get("rearLeft");
-            rearRight = hardwareMap.dcMotor.get("rearRight");
+            leftFront = hardwareMap.dcMotor.get("frontLeft");
+            rightFront = hardwareMap.dcMotor.get("frontRight");
+            leftRear = hardwareMap.dcMotor.get("rearLeft");
+            rightRear = hardwareMap.dcMotor.get("rearRight");
 
             IMU imu = hardwareMap.get(IMU.class, "imu");
 
@@ -95,8 +95,8 @@ import dev.nextftc.hardware.impl.MotorEx;
             intakeMotor.setPower(0);
 
 
-            rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
             state = State.GENERAL_MOVEMENT;
 
@@ -119,10 +119,10 @@ import dev.nextftc.hardware.impl.MotorEx;
                 double rx = gamepad1.right_stick_x;
                 double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
-                frontLeft.setPower((y + x + rx) / denominator);
-                frontRight.setPower((y - x + rx) / denominator);
-                rearLeft.setPower((y - x - rx) / denominator);
-                rearRight.setPower((y + x - rx) / denominator);
+                leftFront.setPower((y + x + rx) / denominator);
+                rightFront.setPower((y - x + rx) / denominator);
+                leftRear.setPower((y - x - rx) / denominator);
+                rightRear.setPower((y + x - rx) / denominator);
 
 
                 telemetry.addData("State: ", state);
