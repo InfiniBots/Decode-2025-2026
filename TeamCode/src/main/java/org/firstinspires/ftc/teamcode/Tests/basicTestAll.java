@@ -1,14 +1,13 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Tests;
 
-import static org.firstinspires.ftc.teamcode.TurrTestv2.kd;
-import static org.firstinspires.ftc.teamcode.TurrTestv2.kf;
-import static org.firstinspires.ftc.teamcode.TurrTestv2.ki;
-import static org.firstinspires.ftc.teamcode.TurrTestv2.kp;
+import static org.firstinspires.ftc.teamcode.Tests.TurrTestv2.kd;
+import static org.firstinspires.ftc.teamcode.Tests.TurrTestv2.kf;
+import static org.firstinspires.ftc.teamcode.Tests.TurrTestv2.ki;
+import static org.firstinspires.ftc.teamcode.Tests.TurrTestv2.kp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.bylazar.field.Line;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
