@@ -67,10 +67,6 @@ public class TurrTestv2 extends LinearOpMode {
         double distance = Math.sqrt(scale/ta) + 2;
         return distance;
     }
-    void getVel(){// we doing in ft and tickspersecond
-        graph.add(1,1);//need to add points (ts is random right now)
-        graph.createLUT();
-    }
 
     @Override
     public void runOpMode() {
