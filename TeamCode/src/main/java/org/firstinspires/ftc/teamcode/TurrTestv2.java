@@ -127,6 +127,7 @@ public class TurrTestv2 extends LinearOpMode {
                 TurrMotor.setPower(-power);
                 TurrMotor2.setPower(-power);
             }
+            }
 
             telemetry.addData("TurrMotor Velocity", TurrMotor.getVelocity());
             telemetry.addData("custom target", custom_tps);
@@ -136,9 +137,6 @@ public class TurrTestv2 extends LinearOpMode {
             telemetry.addData("Power", TurrMotor.getPower());
             telemetry.addData("Current", TurrMotor.getCurrent(CurrentUnit.AMPS) + TurrMotor2.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("Distance", distance);
-            telemetry.addData("Target X", llResult.getTx());
-            telemetry.addData("Target Area", llResult.getTa());
             telemetry.update();
         }
     }
-}

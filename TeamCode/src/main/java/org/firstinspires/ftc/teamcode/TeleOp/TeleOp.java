@@ -173,6 +173,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                             state = State.GENERAL_MOVEMENT;
                         }
 
+                        intakeMotor.setPower(1);
+
                         Stopper1.setPosition(0.77);
                         Stopper2.setPosition(0.7);
 
