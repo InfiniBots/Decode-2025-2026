@@ -28,7 +28,10 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor rightFront;
         private DcMotor leftRear;
         private DcMotor rightRear;
+        private DcMotorEx IntakeMotor;
         private PIDFController PIDF;
+
+        private DcMotorEx Turret;
 
         public static double kp = 0.0;
         public static double ki = 0.0;
@@ -47,6 +50,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         private long deltaTime;
         private Servo Stopper1;
         private Servo Stopper2;
+        private long rumbleTime;
 
 
         enum State {
@@ -67,7 +71,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         }
 
         void getVel() {// we doing in ft and tickspersecond
-            graph.add(  1, 1);//need to add points (ts is random right now)
+            graph.add( 1, 1);//need to add points (ts is random right now)
             graph.createLUT();
         }
 
@@ -129,6 +133,7 @@ import dev.nextftc.hardware.impl.MotorEx;
 
                 switch (state) {
                     case GENERAL_MOVEMENT:
+                        gamepad1.rumble(500);
 
                         intakeMotor.setPower(gamepad1.right_trigger); // negative cuz iirc y up is neg down is pos for wtv rzn
 
@@ -156,7 +161,19 @@ import dev.nextftc.hardware.impl.MotorEx;
                         break;
 
                     case PEW_PEW:
+                        gamepad1.rumble(500);
                         currTime = System.currentTimeMillis();
+                        DcMotorEx Turret = new MotorEx("Turret").zeroed().getMotor();
+
+                        Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                        if (gamepad2.dpad_left){
+                            gamepad2.rumble(1);
+                            Turret.setPower(-0.25);
+                        } else if (gamepad2.dpad_right){
+                            gamepad2.rumble(1);
+                            Turret.setPower(0.25);
+                        }
                         if (gamepad1.a) {
                             deltaTime = currTime - lastTime;
                             double power = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime)*(12.0/Voltage.getVoltage());
