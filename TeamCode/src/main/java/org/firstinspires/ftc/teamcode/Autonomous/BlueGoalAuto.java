@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
@@ -41,17 +43,16 @@ public class BlueGoalAuto extends NextFTCOpMode {
 
     public BlueGoalAuto() {
         addComponents(
-                new SubsystemComponent(flywheel),
+                new SubsystemComponent(FlywheelVelocityPID.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 new PedroComponent(Constants::createFollower)
         );
     }
-    private FlywheelVelocityPID flywheel;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private static final Pose startPose = new Pose(34, 135.5, Math.toRadians(90));
-    private static final Pose shootPose = new Pose(37, 107, Math.toRadians(135));
+    private static final Pose startPose = new Pose(34, 135.5, Math.toRadians(180));
+    private static final Pose shootPose = new Pose(37, 107, Math.toRadians(180));
 
     private static final Pose firstBall = new Pose(48, 84, Math.toRadians(180));
     private static final Pose firstBallIntake = new Pose(20, 84, Math.toRadians(180));
@@ -82,10 +83,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
                         (startPose),
                         (shootPose)
                 ))
-                .setLinearHeadingInterpolation(
-                        startPose.getHeading(),
-                        shootPose.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
 
         toFirstBall = follower.pathBuilder()
@@ -93,10 +91,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
                         (shootPose),
                         (firstBall)
                 ))
-                .setLinearHeadingInterpolation(
-                        shootPose.getHeading(),
-                        firstBall.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
 
 
@@ -114,10 +109,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
                         (firstBallIntake),
                         (shootPose)
                 ))
-                .setLinearHeadingInterpolation(
-                        firstBallIntake.getHeading(),
-                        shootPose.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
 
 
@@ -126,10 +118,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
                         (shootPose),
                         (secondBall)
                 ))
-                .setLinearHeadingInterpolation(
-                        shootPose.getHeading(),
-                        secondBall.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
 
 
@@ -147,10 +136,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
                         (secondBallIntake),
                         (shootPose)
                 ))
-                .setLinearHeadingInterpolation(
-                        secondBallIntake.getHeading(),
-                        shootPose.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
 
 
@@ -159,10 +145,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
                         (shootPose),
                         (thirdBall)
                 ))
-                .setLinearHeadingInterpolation(
-                        shootPose.getHeading(),
-                        thirdBall.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
 
 
@@ -180,16 +163,8 @@ public class BlueGoalAuto extends NextFTCOpMode {
                         (thirdBallIntake),
                         (shootPose)
                 ))
-                .setLinearHeadingInterpolation(
-                        thirdBallIntake.getHeading(),
-                        shootPose.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
-    }
-
-    private Command scoringCycle(PathChain pathToBall, PathChain pathToIntake, PathChain pathToShoot) {
-        return new SequentialGroup(
-        );
     }
 
     private Command getAutonomousRoutine() {
@@ -223,11 +198,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
         telemetry.addData("Y", "%.1f", currentPose.getY());
         telemetry.addData("Heading", "%.0f°", Math.toDegrees(currentPose.getHeading()));
         telemetry.addLine();
-
-        telemetry.addData("=== FLYWHEEL ===", "");
-        telemetry.addData("Current RPM", "%.0f", flywheel.getCurrentRPM());
-        telemetry.addData("At Target", flywheel.atTargetVelocity() ? "YES ✓" : "NO");
-        telemetry.addLine();
+        
         telemetry.addData("=== PATH ===", "");
         telemetry.addData("Following", follower.isBusy() ? "YES" : "NO");
 
