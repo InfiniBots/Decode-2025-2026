@@ -23,7 +23,7 @@ public class redGoalAuto extends LinearOpMode {
     public Follower follower;
     public Telemetry telemetry;
     public String state = "start";
-    private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(180));
+    private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
     private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(50));
 
     private static final Pose ballStack_1 = new Pose(96.000, 83.500, Math.toRadians(0));
