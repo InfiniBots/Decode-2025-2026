@@ -205,6 +205,8 @@ import dev.nextftc.hardware.impl.MotorEx;
 
                         intakeMotor.setPower(-1);
 
+                        Stopper1.wait(1500);
+                        Stopper2.wait(1500);
                         Stopper1.setPosition(0.77);
                         Stopper2.setPosition(0.7);
 
