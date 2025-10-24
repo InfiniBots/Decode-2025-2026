@@ -157,6 +157,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Power: ", -gamepad1.right_stick_y);
                         telemetry.addData("Stopper1 Position: ", 0.62);
                         telemetry.addData("Stopper2 Position: ", 0.57);
+                        telemetry.addData("*Loading*   Shooting", " ");
+                        telemetry.addData("    ↑              ", "");
                         telemetry.update();
                         break;
 
@@ -214,6 +216,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Current", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
                         telemetry.addData("Stopper1 Position: ", 0.77);
                         telemetry.addData("Stopper2 Position: ", 0.7);
+                        telemetry.addData("Loading   *Shooting*", " ");
+                        telemetry.addData("               ↑    ", "");
                         telemetry.update();
                         break;
 
