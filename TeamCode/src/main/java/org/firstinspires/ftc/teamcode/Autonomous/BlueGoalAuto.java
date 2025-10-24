@@ -51,7 +51,7 @@ public class BlueGoalAuto extends NextFTCOpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private static final Pose startPose = new Pose(34, 135.5, Math.toRadians(0));
+    private static final Pose startPose = new Pose(34, 135.5, Math.toRadians(180));
     private static final Pose shootPose = new Pose(37, 107, Math.toRadians(180));
 
     private static final Pose firstBall = new Pose(48, 84, Math.toRadians(180));
