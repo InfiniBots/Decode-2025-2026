@@ -18,12 +18,12 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Config
 @Autonomous
-public class redGoalAuto extends LinearOpMode {
+public class farRedGoalAuto extends LinearOpMode {
     private Robot robot;
     public Follower follower;
     public Telemetry telemetry;
     public String state = "start";
-    private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(180));
+    private static final Pose start = new Pose(88, 8, Math.toRadians(90));
     private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(50));
 
     private static final Pose ballStack_1 = new Pose(96.000, 83.500, Math.toRadians(0));
@@ -158,96 +158,96 @@ public class redGoalAuto extends LinearOpMode {
                         startShooting = robot.curTime;
                     }
                     break;
-                    case "toBallStack_1":
-                        if(isAtPose()){
-                            state = "intakingBalls_1";
-                            follower.followPath(toIntakingBalls_1);
+                case "toBallStack_1":
+                    if(isAtPose()){
+                        state = "intakingBalls_1";
+                        follower.followPath(toIntakingBalls_1);
+                    }
+                    break;
+                case "intakingBalls_1":
+                    robot.intakingApproval=true;
+                    if(isAtPose()){
+                        if(robot.curTime-startIntaking>=intakingThreshold){
+                            robot.intakingApproval=false;
+                            state = "shootBall_1";
+                            follower.followPath(shootBall_1);
                         }
-                        break;
-                        case "intakingBalls_1":
-                            robot.intakingApproval=true;
-                            if(isAtPose()){
-                                if(robot.curTime-startIntaking>=intakingThreshold){
-                                    robot.intakingApproval=false;
-                                    state = "shootBall_1";
-                                    follower.followPath(shootBall_1);
-                                    }
-                                }else{
-                                startIntaking = robot.curTime;
-                            }
-                            break;
-                            case "shootBall_1":
-                                if(isAtPose()){
-                                    robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold){
-                                        robot.Mode = "Driving";
-                                        state = "toBallStack_2";
-                                        follower.followPath(toBallStack_2);
-                                    }
-                                }else{
-                                    startShooting = robot.curTime;
-                                }
-                                break;
-                            case "toBallStack_2":
-                                if(isAtPose()){
-                                    state = "intakingBalls_2";
-                                    follower.followPath(toIntakingBalls_2);
-                                }
-                                break;
-                            case "intakingBalls_2":
-                                robot.intakingApproval=true;
-                                if(isAtPose()){
-                                    if(robot.curTime-startIntaking>=intakingThreshold){
-                                        robot.intakingApproval=false;
-                                        state = "shootBall_2";
-                                        follower.followPath(shootBall_2);
-                                    }
-                                }else{
-                                    startIntaking = robot.curTime;
-                                }
-                                break;
-                            case "shootBall_2":
-                                if(isAtPose()){
-                                    robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold){
-                                        robot.Mode = "Driving";
-                                        state = "toBallStack_3";
-                                        follower.followPath(toBallStack_3);
-                                    }
-                                }else{
-                                    startShooting = robot.curTime;
-                                }
-                                break;
-                            case "toBallStack_3":
-                                if(isAtPose()){
-                                    state = "intakingBalls_3";
-                                    follower.followPath(toIntakingBalls_3);
-                                }
-                                break;
-                            case "intakingBalls_3":
-                                robot.intakingApproval=true;
-                                if(isAtPose()){
-                                    if(robot.curTime-startIntaking>=intakingThreshold){
-                                        robot.intakingApproval=false;
-                                        state = "shootBall_3";
-                                        follower.followPath(shootBall_3);
+                    }else{
+                        startIntaking = robot.curTime;
+                    }
+                    break;
+                case "shootBall_1":
+                    if(isAtPose()){
+                        robot.Mode = "shooting";
+                        if(robot.curTime-startShooting>=shootingThreshold){
+                            robot.Mode = "Driving";
+                            state = "toBallStack_2";
+                            follower.followPath(toBallStack_2);
+                        }
+                    }else{
+                        startShooting = robot.curTime;
+                    }
+                    break;
+                case "toBallStack_2":
+                    if(isAtPose()){
+                        state = "intakingBalls_2";
+                        follower.followPath(toIntakingBalls_2);
+                    }
+                    break;
+                case "intakingBalls_2":
+                    robot.intakingApproval=true;
+                    if(isAtPose()){
+                        if(robot.curTime-startIntaking>=intakingThreshold){
+                            robot.intakingApproval=false;
+                            state = "shootBall_2";
+                            follower.followPath(shootBall_2);
+                        }
+                    }else{
+                        startIntaking = robot.curTime;
+                    }
+                    break;
+                case "shootBall_2":
+                    if(isAtPose()){
+                        robot.Mode = "shooting";
+                        if(robot.curTime-startShooting>=shootingThreshold){
+                            robot.Mode = "Driving";
+                            state = "toBallStack_3";
+                            follower.followPath(toBallStack_3);
+                        }
+                    }else{
+                        startShooting = robot.curTime;
+                    }
+                    break;
+                case "toBallStack_3":
+                    if(isAtPose()){
+                        state = "intakingBalls_3";
+                        follower.followPath(toIntakingBalls_3);
+                    }
+                    break;
+                case "intakingBalls_3":
+                    robot.intakingApproval=true;
+                    if(isAtPose()){
+                        if(robot.curTime-startIntaking>=intakingThreshold){
+                            robot.intakingApproval=false;
+                            state = "shootBall_3";
+                            follower.followPath(shootBall_3);
 
-                                    }
-                                }else{
-                                    startIntaking = robot.curTime;
-                                }
-                                break;
-                            case "shootBall_3":
-                                if(isAtPose()){
-                                    robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold){
-                                        robot.Mode = "Driving";
-                                    }
-                                }else{
-                                    startShooting = robot.curTime;
-                                }
-                                break;
                         }
+                    }else{
+                        startIntaking = robot.curTime;
+                    }
+                    break;
+                case "shootBall_3":
+                    if(isAtPose()){
+                        robot.Mode = "shooting";
+                        if(robot.curTime-startShooting>=shootingThreshold){
+                            robot.Mode = "Driving";
+                        }
+                    }else{
+                        startShooting = robot.curTime;
+                    }
+                    break;
+            }
             robot.UpdateRobot();
             follower.update();
             telemetry.update();
