@@ -135,7 +135,18 @@ import dev.nextftc.hardware.impl.MotorEx;
                     case GENERAL_MOVEMENT:
                         gamepad1.rumble(500);
 
-                        intakeMotor.setPower(gamepad1.right_trigger); // negative cuz iirc y up is neg down is pos for wtv rzn
+                        if (gamepad1.right_trigger > 0.1) {
+                            intakeMotor.setPower(1);
+                        }
+
+                        else if (gamepad1.left_trigger > 0.1) {
+                            intakeMotor.setPower(-1);
+                        }
+
+                        else {
+                            intakeMotor.setPower(0);
+                        }
+
 
                         if (gamepad1.right_bumper) {
                             state = State.PEW_PEW;
@@ -190,7 +201,7 @@ import dev.nextftc.hardware.impl.MotorEx;
                             state = State.GENERAL_MOVEMENT;
                         }
 
-                        intakeMotor.setPower(1);
+                        intakeMotor.setPower(-1);
 
                         Stopper1.setPosition(0.77);
                         Stopper2.setPosition(0.7);
