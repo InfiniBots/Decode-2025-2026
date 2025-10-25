@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -29,9 +30,12 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor leftRear;
         private DcMotor rightRear;
         private DcMotorEx IntakeMotor;
+        private ElapsedTime stopperDelayTimer = new ElapsedTime();
+
         private PIDFController PIDF;
 
         private DcMotorEx Turret;
+        private long currTime3;
 
         public static double kp = 0.0;
         public static double ki = 0.0;
@@ -47,9 +51,11 @@ import dev.nextftc.hardware.impl.MotorEx;
 
         public static int ticksPerSecond = 700;
         private long currTime;
+        private long currTime2;
         private long deltaTime;
         private Servo Stopper1;
         private Servo Stopper2;
+        private long currTime4;
         private long rumbleTime;
 
 
@@ -133,6 +139,8 @@ import dev.nextftc.hardware.impl.MotorEx;
 
                 switch (state) {
                     case GENERAL_MOVEMENT:
+                        currTime2 = 0;
+                        currTime3 = 0;
                         gamepad1.rumble(500);
 
                         if (gamepad1.right_trigger > 0.1) {
@@ -147,13 +155,16 @@ import dev.nextftc.hardware.impl.MotorEx;
                             intakeMotor.setPower(0);
                         }
 
+                        Stopper1.setPosition(0.62);
+                        Stopper2.setPosition(0.57);
+
 
                         if (gamepad1.right_bumper) {
+                            stopperDelayTimer.reset();
                             state = State.PEW_PEW;
+
                         }
 
-                        Stopper1.setPosition(0.62);
-                        Stopper2.setPosition(0.56);
 
                         telemetry.addData("State: ", state);
                         telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
@@ -170,12 +181,15 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Stopper2 Position: ", 0.57);
                         telemetry.addData("*Loading*   Shooting", " ");
                         telemetry.addData("    ↑              ", "");
+                        telemetry.addData("Nio: ", currTime2);
                         telemetry.update();
                         break;
 
                     case PEW_PEW:
                         gamepad1.rumble(500);
                         currTime = System.currentTimeMillis();
+                        currTime2 = System.currentTimeMillis();
+                        currTime4 = currTime3 - currTime2;
                         DcMotorEx Turret = new MotorEx("Turret").zeroed().getMotor();
 
                         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -201,15 +215,18 @@ import dev.nextftc.hardware.impl.MotorEx;
                         }
                         if (gamepad1.left_bumper) {
                             state = State.GENERAL_MOVEMENT;
+                            Stopper1.setPosition(0.62);
+                            Stopper2.setPosition(0.56);
                         }
 
                         intakeMotor.setPower(-1);
 
-                        Stopper1.wait(1500);
-                        Stopper2.wait(1500);
-                        Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        if (stopperDelayTimer.milliseconds() > 1500) {
+                            Stopper1.setPosition(0.77);
+                            Stopper2.setPosition(0.7);
+                        }
 
+                        currTime3 = System.currentTimeMillis();
 
                         telemetry.addData("State: ", state);
                         telemetry.addData("Control Stick Left Y: ", -gamepad1.left_stick_y);
@@ -231,6 +248,7 @@ import dev.nextftc.hardware.impl.MotorEx;
                         telemetry.addData("Stopper2 Position: ", 0.7);
                         telemetry.addData("Loading   *Shooting*", " ");
                         telemetry.addData("               ↑    ", "");
+                        telemetry.addData("NIO NIO: ", currTime2);
                         telemetry.update();
                         break;
 
