@@ -93,7 +93,6 @@ public class turretGoPewPewV2 {
             distance = distanceAprilTag(llResult.getTa());
             telemetry.addData("limelight distance working",true);
         }
-        llResult.getTx();
         shooter_target =(int)(6553.762-(167.7485*distance)+(2.001088*Math.pow(distance,2))-(0.01014018*Math.pow(distance,3))+(0.00001876297*Math.pow(distance,4)));
     }
 

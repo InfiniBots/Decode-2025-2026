@@ -37,6 +37,8 @@ public class Tele extends LinearOpMode {
                 robot.Mode="Driving";
             }
             robot.UpdateRobot();
+            telemetry.addData("INTAKE: ","Right Trigger");
+            telemetry.addData("SHOOT","a");
             telemetry.update();
         }
     }
