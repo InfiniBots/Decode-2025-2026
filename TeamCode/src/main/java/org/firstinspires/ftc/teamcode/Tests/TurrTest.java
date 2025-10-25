@@ -55,7 +55,7 @@ public class TurrTest extends LinearOpMode {
                     TurrMotor.setPower(0);// sets to 0 when not pressed
                     TurrMotor2.setPower(0);
                 }
-            }else if(!powering){
+            }else{
                 if (gamepad1.a) { //castrate gautam
                     TurrMotor.setVelocity(ticksPSec);
                     TurrMotor2.setVelocity(ticksPSec);

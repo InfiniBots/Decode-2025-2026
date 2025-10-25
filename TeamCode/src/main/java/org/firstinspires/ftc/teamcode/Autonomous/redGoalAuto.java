@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathBuilder;
@@ -22,12 +23,17 @@ public class redGoalAuto extends LinearOpMode {
     private Robot robot;
     public Follower follower;
     public Telemetry telemetry;
+    public static boolean openGate=false;
     public String state = "start";
     private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
     private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(50));
 
     private static final Pose ballStack_1 = new Pose(96.000, 83.500, Math.toRadians(0));
     private static final Pose intakingBalls_1 = new Pose(125.000, 83.500, Math.toRadians(0));
+    private static final Pose openGateControl = new Pose(120, 93, Math.toRadians(0));
+
+    private static final Pose intakingBalls_1_openGate = new Pose(129.000, 75.000, Math.toRadians(0));
+
 
     private static final Pose ballStack_2 = new Pose(96.000, 59.500, Math.toRadians(0));
     private static final Pose intakingBalls_2 = new Pose(125.000, 59.500, Math.toRadians(0));
@@ -40,11 +46,13 @@ public class redGoalAuto extends LinearOpMode {
     public long startIntaking;
     public static int intakingThreshold=500;
     public static int shootingThreshold=2000;
+    public static int holdGateThreshold=1000;
     public static double intakeDelay = 0.3;
     public static double tTolerance=0.99;
     private PathChain Preload;
     private PathChain toBallStack_1;
     private PathChain toIntakingBalls_1;
+    private PathChain toIntakingBalls_1_openGate;
     private PathChain shootBall_1;
     private PathChain toBallStack_2;
     private PathChain toIntakingBalls_2;
@@ -72,6 +80,12 @@ public class redGoalAuto extends LinearOpMode {
                         new BezierLine(ballStack_1, intakingBalls_1)
                 )
                 .setConstantHeadingInterpolation(intakingBalls_1.getHeading())
+                .build();
+        toIntakingBalls_1_openGate = follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(ballStack_1,openGateControl,intakingBalls_1_openGate)
+                )
+                .setLinearHeadingInterpolation(ballStack_1.getHeading(),intakingBalls_1_openGate.getHeading())
                 .build();
 
         shootBall_1 =  follower.pathBuilder()
@@ -161,18 +175,30 @@ public class redGoalAuto extends LinearOpMode {
                     case "toBallStack_1":
                         if(isAtPose()){
                             state = "intakingBalls_1";
-                            follower.followPath(toIntakingBalls_1);
+                            if(openGate){
+                                follower.followPath(toIntakingBalls_1_openGate);
+                            }else {
+                                follower.followPath(toIntakingBalls_1);
+                            }
                         }
                         break;
                         case "intakingBalls_1":
-                            robot.intakingApproval=true;
-                            if(isAtPose()){
-                                if(robot.curTime-startIntaking>=intakingThreshold){
-                                    robot.intakingApproval=false;
-                                    state = "shootBall_1";
-                                    follower.followPath(shootBall_1);
+                            robot.intakingApproval = true;
+                            if (isAtPose()) {
+                                if (openGate) {
+                                    if (robot.curTime - startIntaking >= (intakingThreshold + holdGateThreshold)) {
+                                        robot.intakingApproval = false;
+                                        state = "shootBall_1";
+                                        follower.followPath(shootBall_1);
                                     }
-                                }else{
+                                } else {
+                                    if (robot.curTime - startIntaking >= intakingThreshold) {
+                                        robot.intakingApproval = false;
+                                        state = "shootBall_1";
+                                        follower.followPath(shootBall_1);
+                                    }
+                                }
+                            } else {
                                 startIntaking = robot.curTime;
                             }
                             break;

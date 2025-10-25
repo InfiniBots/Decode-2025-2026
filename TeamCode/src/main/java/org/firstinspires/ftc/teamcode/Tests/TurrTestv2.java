@@ -88,38 +88,38 @@ public class TurrTestv2 extends LinearOpMode {
             currTime = System.currentTimeMillis();
             LLResult llResult = limelight.getLatestResult();
             if (llResult == null) {
-                telemetry.addData("limelight is null",0);
+                telemetry.addData("limelight is null", 0);
             }
             if (llResult != null) {
                 distance = distanceAprilTag(llResult.getTa());
-                telemetry.addData("limelight not null",0);
+                telemetry.addData("limelight not null", 0);
             }
-            if(llResult.isValid()){
-                telemetry.addData("limelight is valid",0);
+            if (llResult.isValid()) {
+                telemetry.addData("limelight is valid", 0);
             }
             intakeStage1.setPower(gamepad1.left_stick_y);
-            if ((shooterOn|| gamepad1.a)&&!custom) {
+            if ((shooterOn || gamepad1.a) && !custom) {
                 deltaTime = currTime - lastTime;
-                double power = PID(TurrMotor.getVelocity(), ticksPerSecond, deltaTime)*(12.0/Voltage.getVoltage());
-                power=Math.max(-1.0, Math.min(1.0, power));
+                double power = PID(TurrMotor.getVelocity(), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
+                power = Math.max(-1.0, Math.min(1.0, power));
                 lastTime = currTime;
                 TurrMotor.setPower(-power);
                 TurrMotor2.setPower(-power);
-            } else if(!custom){
+            } else if (!custom) {
                 TurrMotor.setPower(0);
                 TurrMotor2.setPower(0);
                 lastTime = currTime;
             }
-            if(custom){
-                custom_tps=(int)(6553.762-(167.7485*distance)+(2.001088*Math.pow(distance,2))-(0.01014018*Math.pow(distance,3))+(0.00001876297*Math.pow(distance,4)));
+            if (custom) {
+                custom_tps = (int) (6553.762 - (167.7485 * distance) + (2.001088 * Math.pow(distance, 2)) - (0.01014018 * Math.pow(distance, 3)) + (0.00001876297 * Math.pow(distance, 4)));
                 deltaTime = currTime - lastTime;
-                double power = PID(TurrMotor.getVelocity(), custom_tps, deltaTime)*(12.0/Voltage.getVoltage());
-                power=Math.max(-1.0, Math.min(1.0, power));
+                double power = PID(TurrMotor.getVelocity(), custom_tps, deltaTime) * (12.0 / Voltage.getVoltage());
+                power = Math.max(-1.0, Math.min(1.0, power));
                 lastTime = currTime;
                 TurrMotor.setPower(-power);
                 TurrMotor2.setPower(-power);
             }
-            }
+
 
             telemetry.addData("TurrMotor Velocity", TurrMotor.getVelocity());
             telemetry.addData("custom target", custom_tps);
@@ -130,5 +130,6 @@ public class TurrTestv2 extends LinearOpMode {
             telemetry.addData("Current", TurrMotor.getCurrent(CurrentUnit.AMPS) + TurrMotor2.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("Distance", distance);
             telemetry.update();
+        }
         }
     }
