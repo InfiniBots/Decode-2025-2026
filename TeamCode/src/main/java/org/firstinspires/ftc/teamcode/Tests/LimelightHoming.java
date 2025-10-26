@@ -22,7 +22,6 @@ public class LimelightHoming extends LinearOpMode {
     private final double kD = 0.0; // tune
     private final double kF = 0.0;
 
-    PIDFController pidf = new PIDFController(kP, kI, kD, kF);
 
     private double integral = 0;
     private double lastError = 0;

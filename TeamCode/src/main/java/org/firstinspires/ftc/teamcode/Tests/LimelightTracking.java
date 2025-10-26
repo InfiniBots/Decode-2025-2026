@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.Tests;
 
 
-import static org.firstinspires.ftc.teamcode.subSystem.FlywheelVelocityPID.kD;
-import static org.firstinspires.ftc.teamcode.subSystem.FlywheelVelocityPID.kI;
-import static org.firstinspires.ftc.teamcode.subSystem.FlywheelVelocityPID.kP;
 
 import com.pedropathing.control.PIDFController;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -14,40 +11,85 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 
-/*@Autonomous
+@Autonomous
 public class LimelightTracking extends OpMode{
-
-    public void init(){
-
-    }
-
-    public void loop(){
-
-        if (result == null || !result.isValid()){
-            // ok ill add the code later crodie
-        } else {
-            if (x != wishingX){
-                Turret.setPositionPIDFCoefficients();
-            }
-        }
-
-    }
     private DcMotorEx Turret;
-    private Limelight3A limelight;
 
     private final double kp = 0.0 ;
     private final double ki = 0.0;
     private final double kd = 0.0;
     private final double kf = 0.0;
 
+    private double targetPosition = 0;
+    private double lastError = 0;
+    private double integralSum = 0;
+    private double lastTime = 0;
+    private boolean isntGettingRecognized = false;
+    private Limelight3A limelight;
+
+
+
     private final double wishingX = 0.0;
 
-    LLResult result = limelight.getLatestResult();
 
-    private double x = result.getTx();
 
-    Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void init(){
+
+
+        Turret = hardwareMap.get(DcMotorEx.class, "Turret");
+        Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
+
+
+    }
+
+    public void start(){
+        lastTime = getRuntime();
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(1);
+        limelight.start();
+    }
+
+    public void loop(){
+        LLResult result = limelight.getLatestResult();
+        double x = result.getTx();
+        double currTime = getRuntime();
+        double deltaTime = currTime - lastTime;
+        double error = wishingX - x;
+
+        if (deltaTime <= 0){
+            deltaTime = 0.0001; // prevents ^ing
+        }
+
+        if (result == null || !result.isValid()){
+            isntGettingRecognized = true; // TEMPORARY
+        } else {
+            if (x != wishingX){
+                double derivative = (error - lastError) / deltaTime;
+                integralSum += error * deltaTime;
+
+                double output = (kp * error) + (ki * integralSum) + (kd * derivative) + (kf * Math.signum(error));
+
+                Turret.setPower(output);
+
+                lastError = error;
+                lastTime = currTime;
+
+
+            }
+
+
+            telemetry.addData("isn'tGettingRecognized: ", isntGettingRecognized);
+            telemetry.addData("target x: ", x);
+            telemetry.addData("error: ", error);
+        }
+
+    }
+
+
 
 }
 
- */
+
