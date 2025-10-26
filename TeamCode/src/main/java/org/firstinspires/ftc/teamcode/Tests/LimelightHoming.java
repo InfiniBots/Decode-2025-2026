@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Tests;
 
+import com.pedropathing.control.PIDFController;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -19,6 +20,9 @@ public class LimelightHoming extends LinearOpMode {
     private final double kP = 0.0; // tune
     private final double kI = 0.0; // tune
     private final double kD = 0.0; // tune
+    private final double kF = 0.0;
+
+    PIDFController pidf = new PIDFController(kP, kI, kD, kF);
 
     private double integral = 0;
     private double lastError = 0;

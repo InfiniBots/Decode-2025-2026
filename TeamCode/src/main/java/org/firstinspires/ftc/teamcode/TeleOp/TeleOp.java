@@ -200,18 +200,19 @@ import dev.nextftc.hardware.impl.MotorEx;
                         DcMotorEx Turret = new MotorEx("Turret").zeroed().getMotor();
 
                         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        deltaTime = currTime - lastTime;
+                        double power1 = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
+                        power1 = Math.max(-1.0, Math.min(1.0, power1));
+                        lastTime = currTime;
+                        TopFlywheel.setPower(-power1);
+                        BottomFlywheel.setPower(-power1);
 
-                        if (gamepad1.a) {
-                            deltaTime = currTime - lastTime;
-                            double power1 = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
-                            power1 = Math.max(-1.0, Math.min(1.0, power1));
-                            lastTime = currTime;
-                            TopFlywheel.setPower(-power1);
-                            BottomFlywheel.setPower(-power1);
-                        } else {
-                            TopFlywheel.setPower(0);
-                            BottomFlywheel.setPower(0);
-                            lastTime = currTime;
+                        if (gamepad2.left_bumper){
+                            Stopper1.setPosition(0.62);
+                            Stopper2.setPosition(0.57);
+                        } else if (gamepad2.right_bumper){
+                            Stopper1.setPosition(0.77);
+                            Stopper2.setPosition(0.77);
                         }
                         if (gamepad1.left_bumper) {
                             state = State.GENERAL_MOVEMENT;
