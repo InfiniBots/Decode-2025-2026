@@ -160,6 +160,8 @@ import dev.nextftc.hardware.impl.MotorEx;
                         currTime2 = 0;
                         currTime3 = 0;
                         gamepad1.rumble(500);
+                        TopFlywheel.setPower(0);
+                        BottomFlywheel.setPower(0);
 
                         if (gamepad1.left_trigger > 0.1) {
                             intakeMotor.setPower(1);
