@@ -31,7 +31,7 @@ public class FlywheelTuner extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         Gamepads.gamepad1().a()
-                .whenBecomesTrue(FlywheelVelocityPID.INSTANCE.runToRPM(targetRPM));
+                .whenBecomesTrue(FlywheelVelocityPID.INSTANCE.runToVelocity(targetRPM));
 
         Gamepads.gamepad1().b()
                 .whenBecomesTrue(FlywheelVelocityPID.INSTANCE.stop());

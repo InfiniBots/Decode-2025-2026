@@ -90,12 +90,22 @@ import dev.nextftc.hardware.impl.MotorEx;
             rightFront = hardwareMap.dcMotor.get("rightFront");
             leftRear = hardwareMap.dcMotor.get("leftRear");
             rightRear = hardwareMap.dcMotor.get("rightRear");
+
+            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+
+            leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
             VoltageSensor Voltage = hardwareMap.voltageSensor.iterator().next();
 
             IMU imu = hardwareMap.get(IMU.class, "imu");
 
             TopFlywheel = hardwareMap.get(DcMotorEx.class, "TopFlywheel");
             BottomFlywheel = hardwareMap.get(DcMotorEx.class, "BottomFlywheel");
+            Turret = hardwareMap.get(DcMotorEx.class, "Turret");
             TopFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             BottomFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             BottomFlywheel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -106,8 +116,6 @@ import dev.nextftc.hardware.impl.MotorEx;
             intakeMotor.setPower(0);
 
 
-            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
             state = State.GENERAL_MOVEMENT;
 
@@ -155,6 +163,17 @@ import dev.nextftc.hardware.impl.MotorEx;
                             intakeMotor.setPower(0);
                         }
 
+                        if (gamepad1.dpad_left){
+                            gamepad2.rumble(1);
+                            Turret.setPower(-0.5);
+                        } else if (gamepad1.dpad_right){
+                            gamepad1.rumble(1);
+                            Turret.setPower(0.5);
+                        }
+                        else {
+                            Turret.setPower(0);
+                        }
+
                         Stopper1.setPosition(0.62);
                         Stopper2.setPosition(0.57);
 
@@ -194,13 +213,6 @@ import dev.nextftc.hardware.impl.MotorEx;
 
                         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                        if (gamepad2.dpad_left){
-                            gamepad2.rumble(1);
-                            Turret.setPower(-0.25);
-                        } else if (gamepad2.dpad_right){
-                            gamepad2.rumble(1);
-                            Turret.setPower(0.25);
-                        }
                         if (gamepad1.a) {
                             deltaTime = currTime - lastTime;
                             double power = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime)*(12.0/Voltage.getVoltage());
