@@ -29,7 +29,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor frontRightMotor;
         private DcMotor backLeftMotor;
         private DcMotor backRightMotor;
-        private DcMotorEx IntakeMotor;
+        private DcMotor IntakeMotor;
         private ElapsedTime stopperDelayTimer = new ElapsedTime();
 
         private PIDFController PIDF;
@@ -82,7 +82,7 @@ import dev.nextftc.hardware.impl.MotorEx;
 
         @Override
         public void runOpMode() throws InterruptedException {
-            DcMotorEx intakeMotor = new MotorEx("Intake").zeroed().getMotor();
+            IntakeMotor = hardwareMap.get(DcMotor.class, "Intake");
             frontLeftMotor = hardwareMap.get(DcMotor.class, "leftFront");
             backLeftMotor = hardwareMap.get(DcMotor.class, "leftRear");
             backRightMotor = hardwareMap.get(DcMotor.class, "rightRear");
@@ -106,8 +106,8 @@ import dev.nextftc.hardware.impl.MotorEx;
             Stopper1 = hardwareMap.get(Servo.class, "Stopper1");
             Stopper2 = hardwareMap.get(Servo.class, "Stopper2");
 
-            intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            intakeMotor.setPower(0);
+            IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            IntakeMotor.setPower(0);
 
 
             state = State.GENERAL_MOVEMENT;
@@ -164,11 +164,11 @@ import dev.nextftc.hardware.impl.MotorEx;
                         BottomFlywheel.setPower(0);
 
                         if (gamepad1.left_trigger > 0.1) {
-                            intakeMotor.setPower(1);
+                            IntakeMotor.setPower(1);
                         } else if (gamepad1.right_trigger > 0.1) {
-                            intakeMotor.setPower(-1);
+                            IntakeMotor.setPower(-1);
                         } else {
-                            intakeMotor.setPower(0);
+                            IntakeMotor.setPower(0);
                         }
 
                         if (gamepad1.dpad_left) {
@@ -222,7 +222,7 @@ import dev.nextftc.hardware.impl.MotorEx;
                             Stopper2.setPosition(0.56);
                         }
 
-                        intakeMotor.setPower(-1);
+                        IntakeMotor.setPower(-1);
 
                         if (Math.abs(TopFlywheel.getVelocity()-ticksPerSecond)<stopperThreshold) {
                             Stopper1.setPosition(0.77);

@@ -1,26 +1,22 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subSystem.FlywheelVelocityPID;
-import com.pedropathing.localization.Localizer;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
-import com.pedropathing.paths.PathPoint;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
+import org.firstinspires.ftc.teamcode.subSystem.VelocityPIDController;
 
-import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.delays.Delay;
-import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
-import dev.nextftc.core.components.SubsystemComponent;
-import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
@@ -38,12 +34,27 @@ import dev.nextftc.ftc.components.BulkReadComponent;
  * 9. Intake Third Ball -> (16, 36)
  * 10. Shoot Third Ball -> (37, 107)
  */
+@Config
 @Autonomous
 public class BlueGoalAuto extends NextFTCOpMode {
 
+    private VelocityPIDController pidController;
+    private DcMotorEx TopFlywheel;
+    private DcMotorEx BottomFlywheel;
+    private DcMotor IntakeMotor;
+    private Servo Stopper1;
+    private Servo Stopper2;
+    public static double stopper1Close = 0.62;
+    public static double stopper2Close = 0.57;
+    public static double stopper1Open = 0.77;
+    public static double stopper2Open = 0.7;
+    private long lastTime = 0;
+    public static double ticksPerSecond = 1500.0;
+    public static double velocityThreshold = 60.0;
+    private VoltageSensor voltageSensor;
+
     public BlueGoalAuto() {
         addComponents(
-                new SubsystemComponent(FlywheelVelocityPID.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 new PedroComponent(Constants::createFollower)
         );
@@ -167,25 +178,91 @@ public class BlueGoalAuto extends NextFTCOpMode {
                 .build();
     }
 
-    private Command getAutonomousRoutine() {
-        return new SequentialGroup(
-        );
+
+    public void autonomousPathUpdate() {
+        switch (pathState) {
+            case 0:
+                follower.followPath(shootPreload, true);
+                setPathState(1);
+                break;
+            case 1:
+                if(!follower.isBusy() || pathTimer.getElapsedTimeSeconds() > 3) {
+                    Intake();
+                    updateFlywheel();
+                    pathTimer.resetTimer();
+                    setPathState(2);
+                }
+                break;
+            case 2:
+                if(isFlywheelAtSpeed() || pathTimer.getElapsedTimeSeconds() > 0.5) {
+                    StopperOpen();
+                    pathTimer.resetTimer();
+                    setPathState(3);
+                }
+                break;
+
+            case 3:
+                if(pathTimer.getElapsedTimeSeconds() > 3) {
+                    follower.followPath(toFirstBall, true);
+                    setPathState(4);
+                }
+                break;
+            case 4:
+                if(!follower.isBusy() || pathTimer.getElapsedTimeSeconds() > 3) {
+                    setPathState(5);
+                }
+                break;
+            case 5:
+                if(!follower.isBusy()) {
+                    setPathState(6);
+                }
+                break;
+            case 6:
+                if(!follower.isBusy()) {
+                    setPathState(7);
+                }
+                break;
+            case 7:
+                if(!follower.isBusy()) {
+                    setPathState(-1);
+                }
+                break;
+        }
     }
 
+    public void setPathState(int pState) {
+        pathState = pState;
+        pathTimer.resetTimer();
+    }
 
     @Override
     public void onInit() {
+        TopFlywheel = hardwareMap.get(DcMotorEx.class, "TopFlywheel");
+        BottomFlywheel = hardwareMap.get(DcMotorEx.class, "BottomFlywheel");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "Intake");
+        IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        IntakeMotor.setPower(0);
+        Stopper1 = hardwareMap.get(Servo.class, "Stopper1");
+        Stopper2 = hardwareMap.get(Servo.class, "Stopper2");
+        TopFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BottomFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BottomFlywheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        voltageSensor = hardwareMap.voltageSensor.iterator().next();
+
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);;
-        follower.setStartingPose(startPose);
+        pidController = new VelocityPIDController();
+        StopperClose();
         buildPaths();
+        follower.setStartingPose(startPose);
     }
     @Override
     public void onStartButtonPressed() {
-        getAutonomousRoutine().schedule();
         opmodeTimer.resetTimer();
+        lastTime = System.currentTimeMillis();
+        setPathState(0);
     }
 
     @Override
@@ -198,10 +275,50 @@ public class BlueGoalAuto extends NextFTCOpMode {
         telemetry.addData("Y", "%.1f", currentPose.getY());
         telemetry.addData("Heading", "%.0f°", Math.toDegrees(currentPose.getHeading()));
         telemetry.addLine();
-        
+
         telemetry.addData("=== PATH ===", "");
         telemetry.addData("Following", follower.isBusy() ? "YES" : "NO");
 
         telemetry.update();
+    }
+
+    private void updateFlywheel() {
+        long currTime = System.currentTimeMillis();
+        long deltaTime = currTime - lastTime;
+
+        double currentVelocity = TopFlywheel.getVelocity();
+        double power = pidController.PID(currentVelocity, ticksPerSecond, deltaTime) *(12.0/ voltageSensor.getVoltage());
+        power = Math.max(-1.0, Math.min(1.0, power));
+
+        TopFlywheel.setPower(-power);
+        BottomFlywheel.setPower(-power);
+
+        lastTime = currTime;
+    }
+    private boolean isFlywheelAtSpeed() {
+        return Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < velocityThreshold;
+    }
+
+    private void stopFlywheel() {
+        TopFlywheel.setPower(0);
+        BottomFlywheel.setPower(0);
+    }
+
+    private void StopperOpen()  {
+        Stopper1.setPosition(stopper1Open);
+        Stopper2.setPosition(stopper2Open);
+    }
+
+    private void StopperClose()  {
+        Stopper1.setPosition(stopper1Close);
+        Stopper2.setPosition(stopper2Open);
+    }
+
+    private void Intake() {
+        IntakeMotor.setPower(-1);
+    }
+
+    private void Outtake() {
+        IntakeMotor.setPower(1);
     }
 }
