@@ -14,19 +14,17 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @TeleOp
 public class Tele extends LinearOpMode {
     private Robot robot;
-    public Telemetry telemetry;
-
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        telemetry=new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+         Telemetry telemetry=new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         robot=new Robot(this, telemetry);
 
         waitForStart();
         while(opModeIsActive()){
             robot.drive.driveInputs(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);//drive
-            if(gamepad1.right_trigger>0.25){//intake
+            if(gamepad1.right_trigger>0.15){//intake
                 robot.intakingApproval=true;
             }else {
                 robot.intakingApproval=false;
@@ -38,7 +36,7 @@ public class Tele extends LinearOpMode {
             }
             robot.UpdateRobot();
             telemetry.addData("INTAKE: ","Right Trigger");
-            telemetry.addData("SHOOT","a");
+            telemetry.addData("SHOOT: ","a");
             telemetry.update();
         }
     }

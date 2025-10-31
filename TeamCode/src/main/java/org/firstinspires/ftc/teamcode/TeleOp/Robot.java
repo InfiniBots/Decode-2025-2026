@@ -17,6 +17,7 @@ public class Robot {
     public String Mode="Driving";
     public static boolean isRed=false;//if we red or blue
     public static int chillShooterSpeed=670;
+    public static int setTargetSpeed=1500;
     private boolean continuous=false;
     public boolean intakingApproval=false;
     public Robot(LinearOpMode op, Telemetry telemetry){
@@ -28,7 +29,7 @@ public class Robot {
     public void UpdateRobot(){
         curTime=System.currentTimeMillis();
         turretGoPewPewV2.updateShooter(curTime);
-        turretGoPewPewV2.updateTurret(curTime);
+       // turretGoPewPewV2.updateTurret(curTime);
         //turret aiming code goes outside of switch case want it always on
         switch (Mode){
             case "Driving":
@@ -42,7 +43,8 @@ public class Robot {
                 continuous=false;
                 break;
             case "shooting":
-                turretGoPewPewV2.shootingSpeed();
+                turretGoPewPewV2.setSpeed(setTargetSpeed);
+                //turretGoPewPewV2.shootingSpeed();
                 if(turretGoPewPewV2.shooterIsAtSpeed()||continuous){
                     continuous=true;//so it doesnt stop after every shot since each shot decreases vel speed
                     eatingBalls.intakeOpen();

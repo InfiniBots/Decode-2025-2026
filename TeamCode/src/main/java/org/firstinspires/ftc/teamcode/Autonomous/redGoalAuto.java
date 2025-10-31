@@ -30,7 +30,7 @@ public class redGoalAuto extends LinearOpMode {
 
     private static final Pose ballStack_1 = new Pose(96.000, 83.500, Math.toRadians(0));
     private static final Pose intakingBalls_1 = new Pose(125.000, 83.500, Math.toRadians(0));
-    private static final Pose openGateControl = new Pose(120, 93, Math.toRadians(0));
+    private static final Pose openGateControl = new Pose(121, 90, Math.toRadians(0));
 
     private static final Pose intakingBalls_1_openGate = new Pose(129.000, 75.000, Math.toRadians(0));
 
