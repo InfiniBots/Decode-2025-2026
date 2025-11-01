@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.Tests;
 
 
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.PIDFController;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -9,16 +11,17 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-
+@Config
 @Autonomous
 public class LimelightTracking extends OpMode{
     private DcMotorEx Turret;
 
-    private final double kp = 0.0 ;
-    private final double ki = 0.0;
-    private final double kd = 0.0;
-    private final double kf = 0.0;
+    public static double kp = 0.0 ;
+    public static double ki = 0.0;
+    public static double kd = 0.0;
+    public static double kf = 0.0;
 
     private double targetPosition = 0;
     private double lastError = 0;
@@ -29,7 +32,7 @@ public class LimelightTracking extends OpMode{
 
 
 
-    private final double wishingX = 0.0;
+    private final double wishingX = 0.00;
 
 
 
@@ -39,6 +42,7 @@ public class LimelightTracking extends OpMode{
         Turret = hardwareMap.get(DcMotorEx.class, "Turret");
         Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Turret.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
 
@@ -66,7 +70,7 @@ public class LimelightTracking extends OpMode{
         if (result == null || !result.isValid()){
             isntGettingRecognized = true; // TEMPORARY
         } else {
-            if (x != wishingX){
+            if (x != 0.00){
                 double derivative = (error - lastError) / deltaTime;
                 integralSum += error * deltaTime;
 
@@ -85,6 +89,15 @@ public class LimelightTracking extends OpMode{
             telemetry.addData("target x: ", x);
             telemetry.addData("error: ", error);
         }
+
+        telemetry.addData("kp: ", kp);
+        telemetry.addData("kf: ", kf);
+        telemetry.addData("kd: ", kd);
+        telemetry.addData("ki: ", ki);
+        telemetry.addData("lastError: ", lastError);
+        telemetry.addData("integralSum: ", integralSum);
+        telemetry.addData("lastTime:  ", lastTime);
+
 
     }
 

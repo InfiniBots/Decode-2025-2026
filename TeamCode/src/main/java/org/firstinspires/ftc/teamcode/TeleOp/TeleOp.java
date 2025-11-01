@@ -209,17 +209,12 @@ import dev.nextftc.hardware.impl.MotorEx;
                         TopFlywheel.setPower(-power1);
                         BottomFlywheel.setPower(-power1);
 
-                        if (gamepad2.left_bumper){
-                            Stopper1.setPosition(0.62);
-                            Stopper2.setPosition(0.57);
-                        } else if (gamepad2.right_bumper){
+                        if (gamepad2.right_bumper){
                             Stopper1.setPosition(0.77);
                             Stopper2.setPosition(0.77);
                         }
                         if (gamepad1.left_bumper) {
                             state = State.GENERAL_MOVEMENT;
-                            Stopper1.setPosition(0.62);
-                            Stopper2.setPosition(0.56);
                         }
 
                         IntakeMotor.setPower(-1);
