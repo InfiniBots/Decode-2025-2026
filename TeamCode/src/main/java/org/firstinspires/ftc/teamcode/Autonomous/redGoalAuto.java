@@ -161,7 +161,7 @@ public class redGoalAuto extends LinearOpMode {
                     state="preload";
                     break;
                 case "preload":
-                    if(isAtPose()){
+                    if(!follower.isBusy()){
                         robot.Mode = "shooting";
                         if(robot.curTime-startShooting>=shootingThreshold){
                             robot.Mode = "Driving";
@@ -173,7 +173,7 @@ public class redGoalAuto extends LinearOpMode {
                     }
                     break;
                     case "toBallStack_1":
-                        if(isAtPose()){
+                        if(!follower.isBusy()){
                             state = "intakingBalls_1";
                             if(openGate){
                                 follower.followPath(toIntakingBalls_1_openGate);
@@ -184,7 +184,7 @@ public class redGoalAuto extends LinearOpMode {
                         break;
                         case "intakingBalls_1":
                             robot.intakingApproval = true;
-                            if (isAtPose()) {
+                            if (!follower.isBusy()) {
                                 if (openGate) {
                                     if (robot.curTime - startIntaking >= (intakingThreshold + holdGateThreshold)) {
                                         robot.intakingApproval = false;
@@ -203,7 +203,7 @@ public class redGoalAuto extends LinearOpMode {
                             }
                             break;
                             case "shootBall_1":
-                                if(isAtPose()){
+                                if(!follower.isBusy()){
                                     robot.Mode = "shooting";
                                     if(robot.curTime-startShooting>=shootingThreshold){
                                         robot.Mode = "Driving";
@@ -215,14 +215,14 @@ public class redGoalAuto extends LinearOpMode {
                                 }
                                 break;
                             case "toBallStack_2":
-                                if(isAtPose()){
+                                if(!follower.isBusy()){
                                     state = "intakingBalls_2";
                                     follower.followPath(toIntakingBalls_2);
                                 }
                                 break;
                             case "intakingBalls_2":
                                 robot.intakingApproval=true;
-                                if(isAtPose()){
+                                if(!follower.isBusy()){
                                     if(robot.curTime-startIntaking>=intakingThreshold){
                                         robot.intakingApproval=false;
                                         state = "shootBall_2";
@@ -233,7 +233,7 @@ public class redGoalAuto extends LinearOpMode {
                                 }
                                 break;
                             case "shootBall_2":
-                                if(isAtPose()){
+                                if(!follower.isBusy()){
                                     robot.Mode = "shooting";
                                     if(robot.curTime-startShooting>=shootingThreshold){
                                         robot.Mode = "Driving";
@@ -245,14 +245,14 @@ public class redGoalAuto extends LinearOpMode {
                                 }
                                 break;
                             case "toBallStack_3":
-                                if(isAtPose()){
+                                if(!follower.isBusy()){
                                     state = "intakingBalls_3";
                                     follower.followPath(toIntakingBalls_3);
                                 }
                                 break;
                             case "intakingBalls_3":
                                 robot.intakingApproval=true;
-                                if(isAtPose()){
+                                if(!follower.isBusy()){
                                     if(robot.curTime-startIntaking>=intakingThreshold){
                                         robot.intakingApproval=false;
                                         state = "shootBall_3";
@@ -264,7 +264,7 @@ public class redGoalAuto extends LinearOpMode {
                                 }
                                 break;
                             case "shootBall_3":
-                                if(isAtPose()){
+                                if(!follower.isBusy()){
                                     robot.Mode = "shooting";
                                     if(robot.curTime-startShooting>=shootingThreshold){
                                         robot.Mode = "Driving";

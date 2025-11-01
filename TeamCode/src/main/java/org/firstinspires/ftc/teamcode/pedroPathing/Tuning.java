@@ -24,6 +24,8 @@ import com.pedropathing.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -775,6 +777,8 @@ class TranslationalTuner extends OpMode {
         }
 
         telemetryM.debug("Push the robot laterally to test the Translational PIDF(s).");
+        telemetryM.addData("ypod",follower.getPose().getY());
+        telemetryM.addData("xpod",follower.getPose().getX());
         telemetryM.update(telemetry);
     }
 }
@@ -793,6 +797,7 @@ class TranslationalTuner extends OpMode {
 class HeadingTuner extends OpMode {
     public static double DISTANCE = 40;
     private boolean forward = true;
+    public static double headingErrorThreshold=0.04;
 
     private Path forwards;
     private Path backwards;
@@ -811,6 +816,7 @@ class HeadingTuner extends OpMode {
         telemetryM.debug("You can adjust the PIDF values to tune the robot's heading PIDF(s).");
         telemetryM.update(telemetry);
         follower.update();
+
         drawCurrent();
     }
 
@@ -845,6 +851,7 @@ class HeadingTuner extends OpMode {
         }
 
         telemetryM.debug("Turn the robot manually to test the Heading PIDF(s).");
+        telemetryM.addData("heading",Math.toDegrees(follower.getHeading()));
         telemetryM.update(telemetry);
     }
 }

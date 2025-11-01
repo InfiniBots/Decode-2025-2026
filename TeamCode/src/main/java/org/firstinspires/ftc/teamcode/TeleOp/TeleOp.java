@@ -49,7 +49,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotorEx TopFlywheel;
         private DcMotorEx BottomFlywheel;
 
-        public static int ticksPerSecond = 700;
+        public static int ticksPerSecond = 1500;
         public static int stopperThreshold = 80;
         private long currTime;
         private long currTime2;
