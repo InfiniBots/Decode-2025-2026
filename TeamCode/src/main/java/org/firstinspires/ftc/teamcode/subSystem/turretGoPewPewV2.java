@@ -76,7 +76,7 @@ public class turretGoPewPewV2 {
         double errorChange = (error - shooter_lastError) / time;
         shooter_errorSum += (error * time);
         shooter_lastError = error;
-        double power = ((shooter_kp * error) + (shooter_ki * shooter_errorSum) + (shooter_kd * errorChange) + ((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity));
+        double power = ((shooter_kp * error) + (shooter_ki * shooter_errorSum) + (shooter_kd * errorChange) + ((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity))* (12.0 / Voltage.getVoltage());
         telemetry.addData("p value", (shooter_kp * error));
         telemetry.addData("kf val",((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity));
         telemetry.addData("pid power",power);

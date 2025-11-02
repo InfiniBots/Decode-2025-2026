@@ -21,6 +21,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import dev.nextftc.hardware.impl.MotorEx;
 
     @com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -59,6 +62,9 @@ import dev.nextftc.hardware.impl.MotorEx;
         private Servo Stopper2;
         private long currTime4;
         private long rumbleTime;
+        public ArrayList<Double> cycles = new ArrayList<>();
+        public long cycleTime;
+        public double cycleAvg=0;
 
 
         enum State {
@@ -124,6 +130,7 @@ import dev.nextftc.hardware.impl.MotorEx;
 
             waitForStart();
             lastTime = System.currentTimeMillis();
+            cycleTime=System.currentTimeMillis();
 
 
             while (opModeIsActive()) {
@@ -225,6 +232,9 @@ import dev.nextftc.hardware.impl.MotorEx;
                         }
                         if (gamepad1.left_bumper) {
                             state = State.GENERAL_MOVEMENT;
+                            double cyc=(currTime-cycleTime)/1000;
+                            cycles.add(cyc);
+                            cycleTime=currTime;
                         }
 
                         IntakeMotor.setPower(-1);
@@ -266,8 +276,13 @@ import dev.nextftc.hardware.impl.MotorEx;
                 telemetry.update();
 
             }
-
-
+            for(int i=0;i<cycles.size();i++){
+                telemetry.addData("Cycle "+(i+1)+": ",cycles.get(i));
+                cycleAvg+=cycles.get(i);
+                telemetry.update();
+            }
+            telemetry.addData("Cycle avg: ", cycleAvg/cycles.size());
+            telemetry.update();
         }
 
     }
