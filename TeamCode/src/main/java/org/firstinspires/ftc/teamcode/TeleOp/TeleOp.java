@@ -143,7 +143,7 @@ import dev.nextftc.hardware.impl.MotorEx;
                 double backLeft = power * sin / max + turn;
                 double backRight = power * cos / max - turn;
 
-                if ((power + Math.abs(turn)) > 1) {
+                if ((power + Math.abs(turn)) > 0.85) {
                     frontLeft /= power + Math.abs(turn);
                     frontRight /= power + Math.abs(turn);
                     backLeft /= power + Math.abs(turn);
@@ -203,7 +203,7 @@ import dev.nextftc.hardware.impl.MotorEx;
 
                         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         deltaTime = currTime - lastTime;
-                        double power1 = PID(TopFlywheel.getVelocity(), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
+                        double power1 = PID(Math.max(TopFlywheel.getVelocity(),BottomFlywheel.getVelocity()), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
                         power1 = Math.max(-1.0, Math.min(1.0, power1));
                         lastTime = currTime;
                         TopFlywheel.setPower(-power1);

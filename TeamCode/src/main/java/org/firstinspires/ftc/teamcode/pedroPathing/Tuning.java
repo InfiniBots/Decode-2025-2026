@@ -797,8 +797,6 @@ class TranslationalTuner extends OpMode {
 class HeadingTuner extends OpMode {
     public static double DISTANCE = 40;
     private boolean forward = true;
-    public static double headingErrorThreshold=0.04;
-
     private Path forwards;
     private Path backwards;
 
@@ -866,7 +864,7 @@ class HeadingTuner extends OpMode {
  * @version 1.0, 3/12/2024
  */
 class DriveTuner extends OpMode {
-    public static double DISTANCE = 40;
+    public static double DISTANCE = 48;
     private boolean forward = true;
 
     private PathChain forwards;
@@ -944,7 +942,7 @@ class DriveTuner extends OpMode {
  * @version 1.0, 3/12/2024
  */
 class Line extends OpMode {
-    public static double DISTANCE = 40;
+    public static double DISTANCE = 48;
     private boolean forward = true;
 
     private Path forwards;
@@ -984,13 +982,19 @@ class Line extends OpMode {
             if (forward) {
                 forward = false;
                 follower.followPath(backwards);
+                telemetryM.addData("max forward",follower.getPose().getX());
             } else {
                 forward = true;
                 follower.followPath(forwards);
+                telemetryM.addData("max back",follower.getPose().getX());
             }
         }
 
         telemetryM.debug("Driving Forward?: " + forward);
+        telemetryM.addData("xpod",follower.getPose().getX());
+        telemetryM.addData("ypod",follower.getPose().getY());
+        telemetryM.addData("48",48);
+        telemetryM.addData("0",0);
         telemetryM.update(telemetry);
     }
 }

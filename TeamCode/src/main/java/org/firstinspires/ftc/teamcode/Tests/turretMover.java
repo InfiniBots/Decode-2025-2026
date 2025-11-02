@@ -40,60 +40,52 @@ public class turretMover extends LinearOpMode {
     public static double ticksPRotation = 2288;
     public double ticksPerAng = (ticksPRotation / 360.0);
     public void configurePinpoint(){
-        pinpoint.setOffsets(-84.0, -168.0, DistanceUnit.MM);
+        pinpoint.setOffsets(-3.38, -4.495, DistanceUnit.INCH);
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-    }
-
-    public double distanceAprilTag(double ta) {
-        double scale = 30692.95; // value requires fine tuning will do later
-        double distance = Math.sqrt(scale / ta) + 2;
-        return distance;
     }
 
     public void updateTurret(long time) {
         llResult = limelight.getLatestResult();
         if (llResult != null && llResult.isValid()) {
-            double angle = distanceAprilTag(llResult.getTx());
-            telemetry.addData("limelight angle working", true);
+            double angle = llResult.getTx();
+            telemetry.addData("limelight angle", angle);
             turret_target = (int) (Turret.getCurrentPosition() + ticksPerAng * angle);
+            telemetry.addData("targetPos",turret_target);
         }
-        long deltaTime = time - turret_lastTime;
-        turret_lastTime = time;
-        double pow = turret_PID(Turret.getCurrentPosition(), turret_target, deltaTime);
+        double pow = turret_PID(Turret.getCurrentPosition(), turret_target, time);
         Turret.setPower(pow);
     }
 
-    public double turret_PID(double currPos, double targetPos, long time) {
+    public double turret_PID(double currPos, double targetPos, long curtime) {
+        long dtime=curtime-lastTime;
+        lastTime=curtime;
         double error = targetPos - currPos;
-        if (time <= 0) {
-            time = 1;
+        if (dtime <= 0) {
+            dtime = 1;
         }
-        double errorChange = (error - turret_lastError) / time;
-        turret_errorSum += (error * time);
+        double errorChange = (error - turret_lastError) / dtime;
+        turret_errorSum += (error * dtime);
         turret_lastError = error;
-        telemetry.addData("inside","inside pid");
         return ((turret_kp * error) + (turret_ki * turret_errorSum) + (turret_kd * errorChange)) * (12.0 / Voltage.getVoltage());
     }
 
     @Override
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
         Turret = hardwareMap.get(DcMotorEx.class, "Turret");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         Voltage = hardwareMap.voltageSensor.iterator().next();
         limelight.pipelineSwitch(1);
         lastTime = System.currentTimeMillis();
+        configurePinpoint();
         waitForStart();
         while (opModeIsActive()) {
             curTime = System.currentTimeMillis();
             if (gamepad1.x||turrOn) {
-                deltaTime = curTime - lastTime;
-                power = turret_PID(Turret.getCurrentPosition(), turret_target, deltaTime) * (12.0 / Voltage.getVoltage());
-                telemetry.addData("power",power);
-                power = Math.max(-1.0, Math.min(1.0, power));
-                lastTime = curTime;
-                Turret.setPower(power);
+                telemetry.addData("power",Turret.getPower());
+                updateTurret(curTime);
             } else {
                 Turret.setPower(0);
                 lastTime = curTime;

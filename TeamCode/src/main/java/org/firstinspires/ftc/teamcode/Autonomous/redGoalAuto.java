@@ -22,31 +22,34 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 public class redGoalAuto extends LinearOpMode {
     private Robot robot;
     public Follower follower;
-    public Telemetry telemetry;
-    public static boolean openGate=false;
+    public static boolean openGate=true;
     public String state = "start";
     private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
-    private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(50));
+    private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
 
     private static final Pose ballStack_1 = new Pose(96.000, 83.500, Math.toRadians(0));
-    private static final Pose intakingBalls_1 = new Pose(125.000, 83.500, Math.toRadians(0));
-    private static final Pose openGateControl = new Pose(121, 90, Math.toRadians(0));
+    private static final Pose intakingBalls_1 = new Pose(131.000, 83.500, Math.toRadians(0));
+    private static final Pose openGateControl = new Pose(116, 77, Math.toRadians(0));
 
-    private static final Pose intakingBalls_1_openGate = new Pose(129.000, 75.000, Math.toRadians(0));
+    private static final Pose intakingBalls_1_openGate = new Pose(131.000, 77.000, Math.toRadians(0));
 
 
     private static final Pose ballStack_2 = new Pose(96.000, 59.500, Math.toRadians(0));
-    private static final Pose intakingBalls_2 = new Pose(125.000, 59.500, Math.toRadians(0));
+    private static final Pose intakingBalls_2 = new Pose(137.000, 59.500, Math.toRadians(0));
+    private static final Pose noTouchGate = new Pose(102,54);
 
     private static final Pose ballStack_3 = new Pose(96.000, 35.500, Math.toRadians(0));
-    private static final Pose intakingBalls_3 = new Pose(125.000, 35.500, Math.toRadians(0));
+    private static final Pose intakingBalls_3 = new Pose(137.000, 35.500, Math.toRadians(0));
 
 
     public long startShooting;
+    public long startGate;
+    public static int shootingSpeed=1500;
+    public static int chillspeed=670;
     public long startIntaking;
     public static int intakingThreshold=500;
-    public static int shootingThreshold=2000;
-    public static int holdGateThreshold=1000;
+    public static int shootingThreshold=3000;
+    public static int holdGateThreshold=2000;
     public static double intakeDelay = 0.3;
     public static double tTolerance=0.99;
     private PathChain Preload;
@@ -83,7 +86,7 @@ public class redGoalAuto extends LinearOpMode {
                 .build();
         toIntakingBalls_1_openGate = follower.pathBuilder()
                 .addPath(
-                        new BezierCurve(ballStack_1,openGateControl,intakingBalls_1_openGate)
+                        new BezierCurve(intakingBalls_1,openGateControl,intakingBalls_1_openGate)
                 )
                 .setLinearHeadingInterpolation(ballStack_1.getHeading(),intakingBalls_1_openGate.getHeading())
                 .build();
@@ -111,7 +114,7 @@ public class redGoalAuto extends LinearOpMode {
 
         shootBall_2 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(intakingBalls_2, shooting)
+                        new BezierCurve(intakingBalls_2,noTouchGate, shooting)
                 )
                 .setLinearHeadingInterpolation(intakingBalls_2.getHeading(), shooting.getHeading())
                 .build();
@@ -144,7 +147,7 @@ public class redGoalAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        telemetry=new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        Telemetry telemetry=new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         robot=new Robot(this,telemetry);
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(start);
@@ -156,6 +159,8 @@ public class redGoalAuto extends LinearOpMode {
             switch (state){
                 case "start":
                     follower.followPath(Preload);
+                    robot.setTargetSpeed=shootingSpeed;
+                    robot.chillShooterSpeed=shootingSpeed;
                     follower.update();
                     telemetry.addData("auto started: ",true);
                     state="preload";
@@ -163,7 +168,7 @@ public class redGoalAuto extends LinearOpMode {
                 case "preload":
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold){
+                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
                             robot.Mode = "Driving";
                             state = "toBallStack_1";
                             follower.followPath(toBallStack_1);
@@ -175,25 +180,23 @@ public class redGoalAuto extends LinearOpMode {
                     case "toBallStack_1":
                         if(!follower.isBusy()){
                             state = "intakingBalls_1";
-                            if(openGate){
-                                follower.followPath(toIntakingBalls_1_openGate);
-                            }else {
-                                follower.followPath(toIntakingBalls_1);
-                            }
+                            follower.followPath(toIntakingBalls_1);
                         }
                         break;
                         case "intakingBalls_1":
                             robot.intakingApproval = true;
                             if (!follower.isBusy()) {
                                 if (openGate) {
-                                    if (robot.curTime - startIntaking >= (intakingThreshold + holdGateThreshold)) {
+                                    if (robot.curTime - startIntaking >= (intakingThreshold)) {
                                         robot.intakingApproval = false;
-                                        state = "shootBall_1";
-                                        follower.followPath(shootBall_1);
+                                        follower.followPath(toIntakingBalls_1_openGate);
+                                        startGate=robot.curTime;
+                                        state="gate";
                                     }
                                 } else {
                                     if (robot.curTime - startIntaking >= intakingThreshold) {
                                         robot.intakingApproval = false;
+                                        robot.chillShooterSpeed=shootingSpeed;
                                         state = "shootBall_1";
                                         follower.followPath(shootBall_1);
                                     }
@@ -202,10 +205,20 @@ public class redGoalAuto extends LinearOpMode {
                                 startIntaking = robot.curTime;
                             }
                             break;
+                            case "gate":
+                                if(!follower.isBusy()) {
+                                    if (robot.curTime - startGate >= (holdGateThreshold)) {
+                                        robot.chillShooterSpeed = shootingSpeed;
+                                        state = "shootBall_1";
+                                        follower.followPath(shootBall_1);
+                                    }
+                                }
+                                break;
                             case "shootBall_1":
                                 if(!follower.isBusy()){
                                     robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold){
+                                    if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                                        robot.chillShooterSpeed=chillspeed;
                                         robot.Mode = "Driving";
                                         state = "toBallStack_2";
                                         follower.followPath(toBallStack_2);
@@ -225,6 +238,7 @@ public class redGoalAuto extends LinearOpMode {
                                 if(!follower.isBusy()){
                                     if(robot.curTime-startIntaking>=intakingThreshold){
                                         robot.intakingApproval=false;
+                                        robot.chillShooterSpeed=shootingSpeed;
                                         state = "shootBall_2";
                                         follower.followPath(shootBall_2);
                                     }
@@ -235,7 +249,8 @@ public class redGoalAuto extends LinearOpMode {
                             case "shootBall_2":
                                 if(!follower.isBusy()){
                                     robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold){
+                                    if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                                        robot.chillShooterSpeed=chillspeed;
                                         robot.Mode = "Driving";
                                         state = "toBallStack_3";
                                         follower.followPath(toBallStack_3);
@@ -255,6 +270,7 @@ public class redGoalAuto extends LinearOpMode {
                                 if(!follower.isBusy()){
                                     if(robot.curTime-startIntaking>=intakingThreshold){
                                         robot.intakingApproval=false;
+                                        robot.chillShooterSpeed=shootingSpeed;
                                         state = "shootBall_3";
                                         follower.followPath(shootBall_3);
 
@@ -266,8 +282,10 @@ public class redGoalAuto extends LinearOpMode {
                             case "shootBall_3":
                                 if(!follower.isBusy()){
                                     robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold){
+                                    if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                                        robot.chillShooterSpeed=chillspeed;
                                         robot.Mode = "Driving";
+                                        robot.chillShooterSpeed=0;
                                     }
                                 }else{
                                     startShooting = robot.curTime;
@@ -276,6 +294,10 @@ public class redGoalAuto extends LinearOpMode {
                         }
             robot.UpdateRobot();
             follower.update();
+            telemetry.addData("ballslaunched",robot.ballsLaunched);
+            telemetry.addData("translational error",follower.getTranslationalError());
+            telemetry.addData("drive error",follower.getDriveError());
+            telemetry.addData("heading error",follower.getHeadingError());
             telemetry.update();
         }
     }

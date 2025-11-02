@@ -32,7 +32,7 @@ public class turretGoPewPewV2 {
 
     private double shooter_errorSum = 0;
     private long shooter_lastTime=0;
-    private int shooter_target;
+    public int shooter_target;
     //pid for turret
     public static double turret_kp = 0.002;
     public static double turret_ki = 0.0;
@@ -67,6 +67,8 @@ public class turretGoPewPewV2 {
         return distance;
     }
     public double shooter_PID(double currentVelocity, double targetVelocity, long time) {
+        telemetry.addData("targetVelocity",targetVelocity);
+        telemetry.addData("pid currentVel",currentVelocity);
         double error = targetVelocity - currentVelocity;
         if (time <= 0) {
             time = 1;
@@ -74,8 +76,10 @@ public class turretGoPewPewV2 {
         double errorChange = (error - shooter_lastError) / time;
         shooter_errorSum += (error * time);
         shooter_lastError = error;
-        double power = ((shooter_kp * error) + (shooter_ki * shooter_errorSum) + (shooter_kd * errorChange) + ((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity))*(12.0/Voltage.getVoltage());//added new velocity thingy
-        power=Math.max(-1.0, Math.min(1.0, power));
+        double power = ((shooter_kp * error) + (shooter_ki * shooter_errorSum) + (shooter_kd * errorChange) + ((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity));
+        telemetry.addData("p value", (shooter_kp * error));
+        telemetry.addData("kf val",((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity));
+        telemetry.addData("pid power",power);
         return power;
     }
     public double turret_PID(double currPos, double targetPos, long time){
@@ -97,15 +101,20 @@ public class turretGoPewPewV2 {
     }
 
     public void setSpeed(int targetSpeed){
-        shooter_target =targetSpeed;
+        shooter_target = targetSpeed;
+        telemetry.addData("shooter speed",targetSpeed);
+    }
+    public double shooterGetSpeed(){
+        return Math.max(TurrMotor.getVelocity(),TurrMotor2.getVelocity());
     }
     public void updateShooter(long time){
         llResult = limelight.getLatestResult();
         long delaTime=time - shooter_lastTime;
-        double power= shooter_PID((TurrMotor.getVelocity()+TurrMotor2.getVelocity())/2, shooter_target,delaTime);
+        double power= shooter_PID(Math.max(TurrMotor.getVelocity(),TurrMotor2.getVelocity()), shooter_target,delaTime);
         shooter_lastTime = time;
         TurrMotor.setPower(-power);
         TurrMotor2.setPower(-power);
+        telemetry.addData("shooter act speed",TurrMotor.getVelocity());
     }
     public void updateTurret(long time){
         llResult = limelight.getLatestResult();
@@ -120,7 +129,7 @@ public class turretGoPewPewV2 {
         Turret.setPower(pow);
     }
     public boolean shooterIsAtSpeed(){
-        if((Math.abs(TurrMotor.getVelocity()+TurrMotor2.getVelocity())/2- shooter_target)<67){
+        if((Math.abs(shooterGetSpeed())- shooter_target)<41){
             shooter_errorSum =0;
             return true;
         }else{

@@ -16,8 +16,10 @@ public class Robot {
     public long curTime;
     public String Mode="Driving";
     public static boolean isRed=false;//if we red or blue
-    public static int chillShooterSpeed=670;
-    public static int setTargetSpeed=1500;
+    public int chillShooterSpeed=670;
+    public int setTargetSpeed=1500;
+    public int ballsLaunched=0;
+    public boolean checking;
     private boolean continuous=false;
     public boolean intakingApproval=false;
     public Robot(LinearOpMode op, Telemetry telemetry){
@@ -34,6 +36,7 @@ public class Robot {
         switch (Mode){
             case "Driving":
                 turretGoPewPewV2.setSpeed(chillShooterSpeed);
+                ballsLaunched=0;
                 eatingBalls.intakeClose();
                 if(intakingApproval){
                     eatingBalls.intaking();
@@ -49,10 +52,17 @@ public class Robot {
                     continuous=true;//so it doesnt stop after every shot since each shot decreases vel speed
                     eatingBalls.intakeOpen();
                     eatingBalls.intaking();
+                    if(turretGoPewPewV2.shooterIsAtSpeed()){
+                        checking=true;
+                    }
+                    if(checking&&turretGoPewPewV2.shooterGetSpeed()<turretGoPewPewV2.shooter_target-200){
+                        ballsLaunched++;
+                        checking=false;
+                    }
                 }
         }
         telemetry.addData("State: ",Mode);
         telemetry.addData("Continuous: ",continuous);
-        telemetry.addData("shooter si at pos: ", turretGoPewPewV2.shooterIsAtSpeed());
+       // telemetry.addData("shooter is at pos: ", turretGoPewPewV2.shooterIsAtSpeed());
     }
 }
