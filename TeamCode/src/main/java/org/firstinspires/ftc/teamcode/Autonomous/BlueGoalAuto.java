@@ -52,7 +52,7 @@ public class BlueGoalAuto extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private static final Pose startPose = new Pose(34, 135.5, Math.toRadians(215));
+    private static final Pose startPose = new Pose(34, 135.5, Math.toRadians(180));
     private static final Pose shootPose = new Pose(37, 107, Math.toRadians(215));
 
     private static final Pose firstBall = new Pose(48, 84, Math.toRadians(180));
@@ -81,7 +81,7 @@ public class BlueGoalAuto extends OpMode {
                         (startPose),
                         (shootPose)
                 ))
-                .setConstantHeadingInterpolation(Math.toRadians(215))
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
                 .build();
 
         toFirstBall = follower.pathBuilder()

@@ -52,8 +52,8 @@ public class BackupRedGoalAuto extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private static final Pose startPose = new Pose(110, 135.5, Math.toRadians(215));
-    private static final Pose shootPose = new Pose(107, 107, Math.toRadians(215));
+    private static final Pose startPose = new Pose(110, 135.5, Math.toRadians(0));
+    private static final Pose shootPose = new Pose(107, 107, Math.toRadians(325));
 
     private static final Pose firstBall = new Pose(96, 84, Math.toRadians(0));
     private static final Pose firstBallIntake = new Pose(124, 84, Math.toRadians(0));
@@ -81,7 +81,7 @@ public class BackupRedGoalAuto extends OpMode {
                         (startPose),
                         (shootPose)
                 ))
-                .setConstantHeadingInterpolation(Math.toRadians(215))
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
                 .build();
 
         toFirstBall = follower.pathBuilder()
@@ -98,7 +98,7 @@ public class BackupRedGoalAuto extends OpMode {
                         (firstBall),
                         (firstBallIntake)
                 ))
-                .setConstantHeadingInterpolation(Math.toRadians(180))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
 
@@ -125,7 +125,7 @@ public class BackupRedGoalAuto extends OpMode {
                         (secondBall),
                         (secondBallIntake)
                 ))
-                .setConstantHeadingInterpolation(Math.toRadians(180))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
 
@@ -152,7 +152,7 @@ public class BackupRedGoalAuto extends OpMode {
                         (thirdBall),
                         (thirdBallIntake)
                 ))
-                .setConstantHeadingInterpolation(Math.toRadians(180))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
 
