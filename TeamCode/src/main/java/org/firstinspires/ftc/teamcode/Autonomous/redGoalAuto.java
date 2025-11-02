@@ -24,7 +24,7 @@
             public Follower follower;
             public static boolean openGate=true;
             public String state = "start";
-            private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
+            private static final Pose start = new Pose(122.000, 125.500, Math.toRadians(-144));
             private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
 
             private static final Pose ballStack_1 = new Pose(96.000, 83.500, Math.toRadians(0));
