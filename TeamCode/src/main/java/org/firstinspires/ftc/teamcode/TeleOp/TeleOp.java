@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.util.InterpLUT;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -29,7 +30,7 @@ import dev.nextftc.hardware.impl.MotorEx;
         private DcMotor frontRightMotor;
         private DcMotor backLeftMotor;
         private DcMotor backRightMotor;
-        private DcMotor IntakeMotor;
+        private DcMotorEx IntakeMotor;
         private ElapsedTime stopperDelayTimer = new ElapsedTime();
 
         private PIDFController PIDF;
@@ -82,7 +83,7 @@ import dev.nextftc.hardware.impl.MotorEx;
 
         @Override
         public void runOpMode() throws InterruptedException {
-            IntakeMotor = hardwareMap.get(DcMotor.class, "Intake");
+            IntakeMotor = hardwareMap.get(DcMotorEx.class, "Intake");
             frontLeftMotor = hardwareMap.get(DcMotor.class, "leftFront");
             backLeftMotor = hardwareMap.get(DcMotor.class, "leftRear");
             backRightMotor = hardwareMap.get(DcMotor.class, "rightRear");
@@ -127,6 +128,14 @@ import dev.nextftc.hardware.impl.MotorEx;
 
             while (opModeIsActive()) {
 
+                LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
+
+                double totalCurrentAmps = controlHub.getCurrent(CurrentUnit.AMPS);
+
+                LynxModule expansionHub = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
+
+                double expansionCurrentAmps =  expansionHub.getCurrent(CurrentUnit.AMPS);
+
                 double x = -gamepad1.left_stick_x * 1.1;
                 double y = -gamepad1.left_stick_y;
                 double turn = gamepad1.right_stick_x;
@@ -159,6 +168,7 @@ import dev.nextftc.hardware.impl.MotorEx;
                     case GENERAL_MOVEMENT:
                         currTime2 = 0;
                         currTime3 = 0;
+                        double intakeCurrent;
                         gamepad1.rumble(500);
                         TopFlywheel.setPower(0);
                         BottomFlywheel.setPower(0);
@@ -245,12 +255,14 @@ import dev.nextftc.hardware.impl.MotorEx;
                 telemetry.addData("Target Speed", ticksPerSecond);
                 telemetry.addData("Error", ticksPerSecond - TopFlywheel.getVelocity());
                 telemetry.addData("Power", TopFlywheel.getPower());
-                telemetry.addData("Current", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
+                telemetry.addData("Current of shooter", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
                 telemetry.addData("Stopper1 Position: ", 0.77);
                 telemetry.addData("Stopper2 Position: ", 0.7);
                 telemetry.addData("Loading   *Shooting*", " ");
                 telemetry.addData("               ↑    ", "");
-                telemetry.addData("NIO NIO: ", currTime2);
+                telemetry.addData("Control Hub Current: ", totalCurrentAmps);
+                telemetry.addData("Expansion Hub 2: ", expansionCurrentAmps);
+                telemetry.addData("intake current",IntakeMotor.getCurrent(CurrentUnit.AMPS));
                 telemetry.update();
 
             }

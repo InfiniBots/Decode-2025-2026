@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.Tests;
 
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.PIDFController;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -12,6 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 @Autonomous
@@ -44,12 +48,10 @@ public class LimelightTracking extends OpMode{
         Turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Turret.setDirection(DcMotorSimple.Direction.REVERSE);
 
-
-
-
-    }
+  }
 
     public void start(){
+        telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         lastTime = getRuntime();
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(1);
