@@ -55,14 +55,14 @@ public class BackupRedGoalAuto extends OpMode {
     private static final Pose startPose = new Pose(110, 135.5, Math.toRadians(215));
     private static final Pose shootPose = new Pose(107, 107, Math.toRadians(215));
 
-    private static final Pose firstBall = new Pose(96, 84, Math.toRadians(180));
-    private static final Pose firstBallIntake = new Pose(124, 84, Math.toRadians(180));
+    private static final Pose firstBall = new Pose(96, 84, Math.toRadians(0));
+    private static final Pose firstBallIntake = new Pose(124, 84, Math.toRadians(0));
 
-    private static final Pose secondBall = new Pose(96, 60, Math.toRadians(180));
-    private static final Pose secondBallIntake = new Pose(124, 60, Math.toRadians(180));
+    private static final Pose secondBall = new Pose(96, 60, Math.toRadians(0));
+    private static final Pose secondBallIntake = new Pose(124, 60, Math.toRadians(0));
 
-    private static final Pose thirdBall = new Pose(96, 36, Math.toRadians(180));
-    private static final Pose thirdBallIntake = new Pose(124, 36, Math.toRadians(180));
+    private static final Pose thirdBall = new Pose(96, 36, Math.toRadians(0));
+    private static final Pose thirdBallIntake = new Pose(124, 36, Math.toRadians(0));
 
     private PathChain shootPreload;
     private PathChain toFirstBall;
