@@ -27,30 +27,31 @@ public class redGoalAuto extends LinearOpMode {
     private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
     private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
 
-    private static final Pose ballStack_1 = new Pose(96.000, 83.500, Math.toRadians(0));
-    private static final Pose intakingBalls_1 = new Pose(129.000, 83.500, Math.toRadians(0));
+    private static final Pose ballStack_1 = new Pose(96.000, 84.000, Math.toRadians(0));
+    private static final Pose intakingBalls_1 = new Pose(127.500, 84.000, Math.toRadians(0));
     private static final Pose openGateControl = new Pose(116, 77, Math.toRadians(0));
 
-    private static final Pose intakingBalls_1_openGate = new Pose(129.000, 77.000, Math.toRadians(0));
+    private static final Pose intakingBalls_1_openGate = new Pose(128.000, 77.500, Math.toRadians(0));
 
 
-    private static final Pose ballStack_2 = new Pose(94.000, 59.500, Math.toRadians(0));
-    private static final Pose intakingBalls_2 = new Pose(135.000, 59.500, Math.toRadians(0));
-    private static final Pose noTouchGate = new Pose(102,54);
+    private static final Pose ballStack_2 = new Pose(96.000, 60.000, Math.toRadians(0));
+    private static final Pose intakingBalls_2 = new Pose(135.000, 60.000, Math.toRadians(0));
+    private static final Pose noTouchGate = new Pose(98,50);
 
-    private static final Pose ballStack_3 = new Pose(94.000, 35.500, Math.toRadians(0));
-    private static final Pose intakingBalls_3 = new Pose(135.000, 35.500, Math.toRadians(0));
-    private static final Pose endingPark = new Pose(95, 75, Math.toRadians(0));
+    private static final Pose ballStack_3 = new Pose(94.000, 40.000, Math.toRadians(0));
+    private static final Pose intakingBalls_3 = new Pose(135.000, 40.000, Math.toRadians(0));
 
 
     public long startShooting;
     public long startGate;
-    public static int shootingSpeed=1500;
+    public static int shootingSpeed=1450;
     public static int chillspeed=670;
     public long startIntaking;
     public static int intakingThreshold=500;
-    public static int shootingThreshold=3000;
-    public static int holdGateThreshold=2000;
+    public static int shootingThreshold=2000;
+    public static int holdGateThreshold=1500;
+    public static double intakeDelay = 0.3;
+    public static double tTolerance=0.99;
     private PathChain Preload;
     private PathChain toBallStack_1;
     private PathChain toIntakingBalls_1;
@@ -62,7 +63,6 @@ public class redGoalAuto extends LinearOpMode {
     private PathChain toBallStack_3;
     private PathChain toIntakingBalls_3;
     private PathChain shootBall_3;
-    private PathChain gettingOut;
 
     public void buildPaths(){
         Preload = follower.pathBuilder()
@@ -139,13 +139,12 @@ public class redGoalAuto extends LinearOpMode {
                 )
                 .setLinearHeadingInterpolation(intakingBalls_3.getHeading(), shooting.getHeading())
                 .build();
-        gettingOut =  follower.pathBuilder()
-                .addPath(
-                        new BezierLine(shooting, endingPark)
-                )
-                .setLinearHeadingInterpolation(shooting.getHeading(), endingPark.getHeading())
-                .build();
     }
+    private boolean isAtPose() {
+        return follower.getCurrentPath().getClosestPointTValue()>=tTolerance;
+    }
+
+
     @Override
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry=new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -248,53 +247,51 @@ public class redGoalAuto extends LinearOpMode {
                     }
                     break;
                 case "shootBall_2":
-                                if(!follower.isBusy()){
-                                    robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
-                                        robot.chillShooterSpeed=chillspeed;
-                                        robot.Mode = "Driving";
-                                        state = "toBallStack_3";
-                                        follower.followPath(toBallStack_3);
-                                    }
-                                }else{
-                                    startShooting = robot.curTime;
-                                }
-                                break;
+                    if(!follower.isBusy()){
+                        robot.Mode = "shooting";
+                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                            robot.chillShooterSpeed=chillspeed;
+                            robot.Mode = "Driving";
+                            state = "toBallStack_3";
+                            follower.followPath(toBallStack_3);
+                        }
+                    }else{
+                        startShooting = robot.curTime;
+                    }
+                    break;
                 case "toBallStack_3":
-                                if(!follower.isBusy()){
-                                    state = "intakingBalls_3";
-                                    follower.followPath(toIntakingBalls_3);
-                                }
-                                break;
+                    if(!follower.isBusy()){
+                        state = "intakingBalls_3";
+                        follower.followPath(toIntakingBalls_3);
+                    }
+                    break;
                 case "intakingBalls_3":
-                                robot.intakingApproval=true;
-                                if(!follower.isBusy()){
-                                    if(robot.curTime-startIntaking>=intakingThreshold){
-                                        robot.intakingApproval=false;
-                                        robot.chillShooterSpeed=shootingSpeed;
-                                        state = "shootBall_3";
-                                        follower.followPath(shootBall_3);
+                    robot.intakingApproval=true;
+                    if(!follower.isBusy()){
+                        if(robot.curTime-startIntaking>=intakingThreshold){
+                            robot.intakingApproval=false;
+                            robot.chillShooterSpeed=shootingSpeed;
+                            state = "shootBall_3";
+                            follower.followPath(shootBall_3);
 
-                                    }
-                                }else{
-                                    startIntaking = robot.curTime;
-                                }
-                                break;
-                            case "shootBall_3":
-                                if(!follower.isBusy()){
-                                    robot.Mode = "shooting";
-                                    if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
-                                        robot.chillShooterSpeed=chillspeed;
-                                        robot.Mode = "Driving";
-                                        robot.chillShooterSpeed=0;
-                                        follower.followPath(gettingOut);
-                                    }
-                                }else{
-                                    startShooting = robot.curTime;
-                                }
-                                break;
-                            }
-
+                        }
+                    }else{
+                        startIntaking = robot.curTime;
+                    }
+                    break;
+                case "shootBall_3":
+                    if(!follower.isBusy()){
+                        robot.Mode = "shooting";
+                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                            robot.chillShooterSpeed=chillspeed;
+                            robot.Mode = "Driving";
+                            robot.chillShooterSpeed=0;
+                        }
+                    }else{
+                        startShooting = robot.curTime;
+                    }
+                    break;
+            }
             robot.UpdateRobot();
             follower.update();
             telemetry.addData("ballslaunched",robot.ballsLaunched);

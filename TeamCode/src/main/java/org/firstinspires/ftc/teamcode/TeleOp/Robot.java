@@ -19,9 +19,10 @@ public class Robot {
     public int chillShooterSpeed=670;
     public int setTargetSpeed=1500;
     public int ballsLaunched=0;
-    public boolean checking;
     private boolean continuous=false;
     public boolean intakingApproval=false;
+    public double lastSpeed;
+    public boolean lowering=false;
     public Robot(LinearOpMode op, Telemetry telemetry){
         this.telemetry = telemetry;
         drive = new Drive(op);
@@ -36,6 +37,7 @@ public class Robot {
         switch (Mode){
             case "Driving":
                 turretGoPewPewV2.setSpeed(chillShooterSpeed);
+                lastSpeed = turretGoPewPewV2.shooterGetSpeed();
                 ballsLaunched=0;
                 eatingBalls.intakeClose();
                 if(intakingApproval){
@@ -52,15 +54,29 @@ public class Robot {
                     continuous=true;//so it doesnt stop after every shot since each shot decreases vel speed
                     eatingBalls.intakeOpen();
                     eatingBalls.intaking();
-                    if(turretGoPewPewV2.shooterIsAtSpeed()){
+
+                    /*if(turretGoPewPewV2.shooterGetSpeed()>turretGoPewPewV2.shooter_target-67){
                         checking=true;
                     }
-                    if(checking&&turretGoPewPewV2.shooterGetSpeed()<turretGoPewPewV2.shooter_target-200){
+                    if(checking&&turretGoPewPewV2.shooterGetSpeed()<turretGoPewPewV2.shooter_target-67){
                         ballsLaunched++;
                         checking=false;
-                    }
+                    }*/
                 }
+                if(continuous && !turretGoPewPewV2.shooterIsAtSpeed()) {
+                    double currentSpeed = turretGoPewPewV2.shooterGetSpeed();
+                    if (currentSpeed < lastSpeed) {
+                        lowering = true;
+                    }
+                    if (lowering && currentSpeed > lastSpeed) {
+                        ballsLaunched++;
+                        lowering = false;
+                    }
+                    lastSpeed = currentSpeed;
+                }
+
         }
+        telemetry.addData("lastspeed",lastSpeed);
         telemetry.addData("State: ",Mode);
         telemetry.addData("Continuous: ",continuous);
        // telemetry.addData("shooter is at pos: ", turretGoPewPewV2.shooterIsAtSpeed());
