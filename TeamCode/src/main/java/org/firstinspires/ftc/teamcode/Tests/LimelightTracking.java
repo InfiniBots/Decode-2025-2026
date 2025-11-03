@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -21,24 +22,35 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Autonomous
 public class LimelightTracking extends OpMode{
     private DcMotorEx Turret;
-
-    public static double kp = 0.0 ;
-    public static double ki = 0.0;
-    public static double kd = 0.0;
-    public static double kf = 0.0;
-
+    private VoltageSensor Voltage;
     private double targetPosition = 0;
-    private double lastError = 0;
-    private double integralSum = 0;
-    private double lastTime = 0;
     private boolean isntGettingRecognized = false;
     private Limelight3A limelight;
-
-
-
+    private long lastTime;
+    private long curTime;
+    public static double turret_kp = 0.02;
+    public static double turret_ki = 0.00000006;
+    public static double turret_kd = 0.003;
+    private double turret_lastError = 0;
+    private double turret_errorSum = 0;
+    public static double ticksPRotation = 2288;
+    public double ticksPerAng = (ticksPRotation / 360.0);
     private final double wishingX = 0.00;
+    public LLResult result;
+    public double error;
 
-
+    public double turret_PID(long curtime) {
+        long dtime=curtime-lastTime;
+        lastTime=curtime;
+        double error =this.error;
+        if (dtime <= 0) {
+            dtime = 1;
+        }
+        double errorChange = (error - turret_lastError) / dtime;
+        turret_errorSum += (error * dtime);
+        turret_lastError = error;
+        return ((turret_kp * error) + (turret_ki * turret_errorSum) + (turret_kd * errorChange)) * (12.0 / Voltage.getVoltage());
+    }
 
     public void init(){
 
@@ -52,54 +64,34 @@ public class LimelightTracking extends OpMode{
 
     public void start(){
         telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        lastTime = getRuntime();
+        lastTime = System.currentTimeMillis();
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        Voltage = hardwareMap.voltageSensor.iterator().next();
         limelight.pipelineSwitch(1);
         limelight.start();
     }
 
     public void loop(){
-        LLResult result = limelight.getLatestResult();
+        curTime=System.currentTimeMillis();
+        result = limelight.getLatestResult();
         double x = result.getTx();
-        double currTime = getRuntime();
-        double deltaTime = currTime - lastTime;
-        double error = wishingX - x;
-
-        if (deltaTime <= 0){
-            deltaTime = 0.0001; // prevents ^ing
-        }
+        error = wishingX - x;
 
         if (result == null || !result.isValid()){
             isntGettingRecognized = true; // TEMPORARY
         } else {
             if (x != 0.00){
-                double derivative = (error - lastError) / deltaTime;
-                integralSum += error * deltaTime;
-
-                double output = (kp * error) + (ki * integralSum) + (kd * derivative) + (kf * Math.signum(error));
-
-                Turret.setPower(output);
-
-                lastError = error;
-                lastTime = currTime;
-
-
+                double power = turret_PID(curTime);
+                Turret.setPower(power);
             }
 
 
             telemetry.addData("isn'tGettingRecognized: ", isntGettingRecognized);
             telemetry.addData("target x: ", x);
             telemetry.addData("error: ", error);
+            telemetry.addData("currpos",Turret.getCurrentPosition());
+            telemetry.update();
         }
-
-        telemetry.addData("kp: ", kp);
-        telemetry.addData("kf: ", kf);
-        telemetry.addData("kd: ", kd);
-        telemetry.addData("ki: ", ki);
-        telemetry.addData("lastError: ", lastError);
-        telemetry.addData("integralSum: ", integralSum);
-        telemetry.addData("lastTime:  ", lastTime);
-
 
     }
 
