@@ -205,7 +205,7 @@ public class TeleOp2 extends LinearOpMode {
                         Turret.setPower(0);
                     }
                     Stopper1.setPosition(0.62);
-                    Stopper2.setPosition(0.57);
+                    Stopper2.setPosition(0.56);
 
                     if (gamepad1.right_bumper) {
                         stopperDelayTimer.reset();
@@ -228,7 +228,7 @@ public class TeleOp2 extends LinearOpMode {
 
                     if (gamepad2.right_bumper) {
                         Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.77);
+                        Stopper2.setPosition(0.7);
                     }
                     if (gamepad1.left_bumper) {
                         state = State.GENERAL_MOVEMENT;
