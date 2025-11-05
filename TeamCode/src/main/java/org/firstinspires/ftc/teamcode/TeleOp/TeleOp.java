@@ -195,7 +195,7 @@ public class TeleOp extends LinearOpMode {
                     frontRightMotor.setPower(frontRight * 0.85);
                     backRightMotor.setPower(backRight * 0.85);
                 }
-                if(gamepad1.left_bumper&&gamepad1.right_bumper){
+                if(gamepad1.x){
                     buildPath();
                     follower.followPath(park);
                 }
