@@ -90,6 +90,7 @@ public class LimelightTracking extends OpMode{
             telemetry.addData("target x: ", x);
             telemetry.addData("error: ", error);
             telemetry.addData("currpos",Turret.getCurrentPosition());
+            telemetry.addData("wahoo: ", result.getTx());
             telemetry.update();
         }
 

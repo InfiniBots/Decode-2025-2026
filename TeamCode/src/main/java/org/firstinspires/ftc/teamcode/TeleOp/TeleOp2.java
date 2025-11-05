@@ -18,9 +18,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.ArrayList;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Noitartsac")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp
 @Config
-public class TeleOp extends LinearOpMode {
+public class TeleOp2 extends LinearOpMode {
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
@@ -49,6 +49,8 @@ public class TeleOp extends LinearOpMode {
     public static boolean usePedroMode = true;
     private Follower follower;
     private boolean prevRightStickButton = false;
+    private LimelightTurretTracker tracker;
+
 
     enum State {
         GENERAL_MOVEMENT,
@@ -73,6 +75,9 @@ public class TeleOp extends LinearOpMode {
 
         follower = Constants.createFollower(hardwareMap);
         follower.update();
+
+        tracker = new LimelightTurretTracker(hardwareMap);
+
 
         IntakeMotor = hardwareMap.get(DcMotorEx.class, "Intake");
         frontLeftMotor = hardwareMap.get(DcMotor.class, "leftFront");
@@ -140,6 +145,7 @@ public class TeleOp extends LinearOpMode {
             }
 
             prevRightStickButton = rsb;
+
 
             if (usePedroMode) {
                 follower.setTeleOpDrive(
@@ -211,6 +217,7 @@ public class TeleOp extends LinearOpMode {
                     break;
 
                 case PEW_PEW:
+                    tracker.update();
                     currTime = System.currentTimeMillis();
                     deltaTime = currTime - lastTime;
                     double power1 = PID(Math.max(TopFlywheel.getVelocity(), BottomFlywheel.getVelocity()), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
