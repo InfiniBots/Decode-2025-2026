@@ -1,9 +1,16 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.finalShoots;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
+import static org.firstinspires.ftc.teamcode.TeleOp.Robot.isRed;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,6 +28,7 @@ import java.util.ArrayList;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 @Config
 public class TeleOp2 extends LinearOpMode {
+    public boolean isReds = isRed;
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
@@ -69,11 +77,21 @@ public class TeleOp2 extends LinearOpMode {
         return ((kp * error) + (ki * errorSum) + (kd * errorChange) + ((0.0007448464 - (3.3333219e-7 * targetVelocity) + (8.791839e-11 * targetVelocity * targetVelocity)) * targetVelocity));//added new velocity thingy
     }
     State state;
+    public PathChain park;
+    public void buildPath(){
+        park = follower.pathBuilder()
+                .addPath(
+                        new BezierLine(follower.getPose(), (isRed?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
+                )
+                .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
+                .build();
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {
 
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(isRed?finalShoot:finalShoots);
         follower.update();
 
         tracker = new LimelightTurretTracker(hardwareMap);
@@ -183,6 +201,10 @@ public class TeleOp2 extends LinearOpMode {
                 backLeftMotor.setPower(backLeft * 0.85);
                 frontRightMotor.setPower(frontRight * 0.85);
                 backRightMotor.setPower(backRight * 0.85);
+            }
+            if(gamepad1.left_bumper&&gamepad1.right_bumper){
+                buildPath();
+                follower.followPath(park);
             }
             switch (state) {
                 case GENERAL_MOVEMENT:

@@ -7,9 +7,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
-import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -40,7 +38,7 @@ public class blueNearAuto extends LinearOpMode {
 
     private static final Pose ballStack_3 = new Pose(51, 36, Math.toRadians(180));
     private static final Pose intakingBalls_3 = new Pose(10.5, 36, Math.toRadians(180));
-    private static final Pose finalShoot = new Pose(43,120);
+    public static final Pose finalShoots = new Pose(43,120, Math.toRadians(-120));
     private static final Pose finalShootC1 =new Pose(60,36);
     private static final Pose finalShootC2 = new Pose(29,97);
 
@@ -138,7 +136,7 @@ public class blueNearAuto extends LinearOpMode {
 
         shootBall_3 =  follower.pathBuilder()
                 .addPath(
-                        new BezierCurve(intakingBalls_3,finalShootC1,finalShootC2 ,finalShoot)
+                        new BezierCurve(intakingBalls_3,finalShootC1,finalShootC2 , finalShoots)
                 )
                 .setTangentHeadingInterpolation()
                 .setReversed()

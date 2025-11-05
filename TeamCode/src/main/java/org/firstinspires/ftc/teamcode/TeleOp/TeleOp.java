@@ -1,9 +1,15 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.finalShoots;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,34 +27,35 @@ import java.util.ArrayList;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 @Config
 public class TeleOp extends LinearOpMode {
-    private DcMotor frontLeftMotor;
-    private DcMotor frontRightMotor;
-    private DcMotor backLeftMotor;
-    private DcMotor backRightMotor;
-    private DcMotorEx IntakeMotor;
-    private ElapsedTime stopperDelayTimer = new ElapsedTime();
-    private DcMotorEx Turret;
-    public static double kp = 0.002;
-    public static double ki = 0.0;
-    public static double kd = 0.0;
-    public static double kf = 0.0;
-    private double lastError = 0;
-    private double errorSum = 0;
-    private long lastTime = 0;
-    private DcMotorEx TopFlywheel;
-    private DcMotorEx BottomFlywheel;
-    public static int ticksPerSecond = 1500;
-    public static int stopperThreshold = 80;
-    private long currTime;
-    private long deltaTime;
-    private Servo Stopper1;
-    private Servo Stopper2;
-    public ArrayList<Double> cycles = new ArrayList<>();
-    public long cycleTime;
-    public double cycleAvg = 0;
-    public static boolean usePedroMode = true;
-    private Follower follower;
-    private boolean prevRightStickButton = false;
+        public boolean isRed=true;
+        private DcMotor frontLeftMotor;
+        private DcMotor frontRightMotor;
+        private DcMotor backLeftMotor;
+        private DcMotor backRightMotor;
+        private DcMotorEx IntakeMotor;
+        private ElapsedTime stopperDelayTimer = new ElapsedTime();
+        private DcMotorEx Turret;
+        public static double kp = 0.002;
+        public static double ki = 0.0;
+        public static double kd = 0.0;
+        public static double kf = 0.0;
+        private double lastError = 0;
+        private double errorSum = 0;
+        private long lastTime = 0;
+        private DcMotorEx TopFlywheel;
+        private DcMotorEx BottomFlywheel;
+        public static int ticksPerSecond = 1500;
+        public static int stopperThreshold = 80;
+        private long currTime;
+        private long deltaTime;
+        private Servo Stopper1;
+        private Servo Stopper2;
+        public ArrayList<Double> cycles = new ArrayList<>();
+        public long cycleTime;
+        public double cycleAvg = 0;
+        public static boolean usePedroMode = true;
+        private Follower follower;
+        private boolean prevRightStickButton = false;
 
     enum State {
         GENERAL_MOVEMENT,
@@ -56,22 +63,32 @@ public class TeleOp extends LinearOpMode {
 
     }
 
-    public double PID(double currentVelocity, double targetVelocity, long time) {
-        double error = targetVelocity - currentVelocity;
-        if (time <= 0) {
-            time = 1;
+        public double PID(double currentVelocity, double targetVelocity, long time) {
+            double error = targetVelocity - currentVelocity;
+            if (time <= 0) {
+                time = 1;
+            }
+            double errorChange = (error - lastError) / time;
+            errorSum += (error * time);
+            lastError = error;
+            return ((kp * error) + (ki * errorSum) + (kd * errorChange) + ((0.0007448464 - (3.3333219e-7 * targetVelocity) + (8.791839e-11 * targetVelocity * targetVelocity)) * targetVelocity));//added new velocity thingy
         }
-        double errorChange = (error - lastError) / time;
-        errorSum += (error * time);
-        lastError = error;
-        return ((kp * error) + (ki * errorSum) + (kd * errorChange) + ((0.0007448464 - (3.3333219e-7 * targetVelocity) + (8.791839e-11 * targetVelocity * targetVelocity)) * targetVelocity));//added new velocity thingy
-    }
-    State state;
+        State state;
+        public PathChain park;
+        public void buildPath(){
+            park = follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(follower.getPose(), (isRed?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
+                    )
+                    .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
+                    .build();
+        }
+
 
     @Override
     public void runOpMode() throws InterruptedException {
-
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(isRed?finalShoot:finalShoots);
         follower.update();
 
         IntakeMotor = hardwareMap.get(DcMotorEx.class, "Intake");
@@ -173,15 +190,19 @@ public class TeleOp extends LinearOpMode {
                     backRight /= power + Math.abs(turn);
                 }
 
-                frontLeftMotor.setPower(frontLeft * 0.85);
-                backLeftMotor.setPower(backLeft * 0.85);
-                frontRightMotor.setPower(frontRight * 0.85);
-                backRightMotor.setPower(backRight * 0.85);
-            }
-            switch (state) {
-                case GENERAL_MOVEMENT:
-                    TopFlywheel.setPower(0);
-                    BottomFlywheel.setPower(0);
+                    frontLeftMotor.setPower(frontLeft * 0.85);
+                    backLeftMotor.setPower(backLeft * 0.85);
+                    frontRightMotor.setPower(frontRight * 0.85);
+                    backRightMotor.setPower(backRight * 0.85);
+                }
+                if(gamepad1.left_bumper&&gamepad1.right_bumper){
+                    buildPath();
+                    follower.followPath(park);
+                }
+                switch (state) {
+                    case GENERAL_MOVEMENT:
+                        TopFlywheel.setPower(0);
+                        BottomFlywheel.setPower(0);
 
                     if (gamepad1.left_trigger > 0.1) {
                         IntakeMotor.setPower(1);
