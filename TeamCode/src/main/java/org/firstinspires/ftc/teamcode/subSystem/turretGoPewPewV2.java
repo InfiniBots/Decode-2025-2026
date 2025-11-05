@@ -67,8 +67,6 @@ public class turretGoPewPewV2 {
         return distance;
     }
     public double shooter_PID(double currentVelocity, double targetVelocity, long time) {
-        telemetry.addData("targetVelocity",targetVelocity);
-        telemetry.addData("pid currentVel",currentVelocity);
         double error = targetVelocity - currentVelocity;
         if (time <= 0) {
             time = 1;
@@ -77,9 +75,6 @@ public class turretGoPewPewV2 {
         shooter_errorSum += (error * time);
         shooter_lastError = error;
         double power = ((shooter_kp * error) + (shooter_ki * shooter_errorSum) + (shooter_kd * errorChange) + ((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity))* (12.0 / Voltage.getVoltage());
-        telemetry.addData("p value", (shooter_kp * error));
-        telemetry.addData("kf val",((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity));
-        telemetry.addData("pid power",power);
         return power;
     }
     public double turret_PID(double currPos, double targetPos, long time){
@@ -129,7 +124,7 @@ public class turretGoPewPewV2 {
         Turret.setPower(pow);
     }
     public boolean shooterIsAtSpeed(){
-        if((Math.abs(shooterGetSpeed())- shooter_target)<41){
+        if(Math.abs(shooterGetSpeed()- shooter_target)<67){
             shooter_errorSum =0;
             return true;
         }else{

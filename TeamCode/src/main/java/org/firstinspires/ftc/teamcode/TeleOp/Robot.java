@@ -55,30 +55,28 @@ public class Robot {
                     eatingBalls.intakeOpen();
                     eatingBalls.intaking();
 
-                    /*if(turretGoPewPewV2.shooterGetSpeed()>turretGoPewPewV2.shooter_target-67){
-                        checking=true;
-                    }
-                    if(checking&&turretGoPewPewV2.shooterGetSpeed()<turretGoPewPewV2.shooter_target-67){
-                        ballsLaunched++;
-                        checking=false;
-                    }*/
                 }
-                if(continuous && !turretGoPewPewV2.shooterIsAtSpeed()) {
-                    double currentSpeed = turretGoPewPewV2.shooterGetSpeed();
+                if(continuous) {
+                    double currentSpeed = turretGoPewPewV2.shooterIsAtSpeed()?turretGoPewPewV2.shooter_target:turretGoPewPewV2.shooterGetSpeed();
                     if (currentSpeed < lastSpeed) {
                         lowering = true;
+                        telemetry.addData("in1","inside");
                     }
                     if (lowering && currentSpeed > lastSpeed) {
                         ballsLaunched++;
                         lowering = false;
+                        telemetry.addData("in2","inside2");
                     }
                     lastSpeed = currentSpeed;
                 }
-
+                telemetry.addData("lastspeed",lastSpeed);
+                telemetry.addData("State: ",Mode);
+                telemetry.addData("Continuous: ",continuous);
+                break;
         }
-        telemetry.addData("lastspeed",lastSpeed);
-        telemetry.addData("State: ",Mode);
-        telemetry.addData("Continuous: ",continuous);
+        telemetry.addData("turrspeed",turretGoPewPewV2.shooterGetSpeed());
+        telemetry.addData("isturratSpeed",turretGoPewPewV2.shooterIsAtSpeed());
+
        // telemetry.addData("shooter is at pos: ", turretGoPewPewV2.shooterIsAtSpeed());
     }
 }

@@ -19,30 +19,30 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Config
 @Autonomous
-public class redGoalAuto extends LinearOpMode {
+public class blueNearAuto extends LinearOpMode {
     private Robot robot;
     public Follower follower;
     public static boolean openGate=true;
     public String state = "start";
-    private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
-    private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
+    private static final Pose start =new Pose(34, 135.3, Math.toRadians(180));
+    private static final Pose shooting =  new Pose(39, 106.000, Math.toRadians(-139));
 
-    private static final Pose ballStack_1 = new Pose(96.000, 84.000, Math.toRadians(0));
-    private static final Pose intakingBalls_1 = new Pose(126.500, 84.000, Math.toRadians(0));
-    private static final Pose openGateControl = new Pose(116, 76, Math.toRadians(0));
+    private static final Pose ballStack_1 = new Pose(51, 84, Math.toRadians(180));
+    private static final Pose intakingBalls_1 = new Pose(18, 84, Math.toRadians(180));
+    private static final Pose openGateControl = new Pose(27, 80, Math.toRadians(0));
 
-    private static final Pose intakingBalls_1_openGate = new Pose(128.000, 79.000, Math.toRadians(0));
+    private static final Pose intakingBalls_1_openGate = new Pose(18.000, 79.000, Math.toRadians(180));
 
 
-    private static final Pose ballStack_2 = new Pose(96.000, 60.000, Math.toRadians(0));
-    private static final Pose intakingBalls_2 = new Pose(135.000, 60.000, Math.toRadians(0));
-    private static final Pose noTouchGate = new Pose(98,50);
+    private static final Pose ballStack_2 = new Pose(51, 59, Math.toRadians(180));
+    private static final Pose intakingBalls_2 = new Pose(10.5, 60, Math.toRadians(180));
+    private static final Pose noTouchGate = new Pose(58,56);
 
-    private static final Pose ballStack_3 = new Pose(94.000, 40.000, Math.toRadians(0));
-    private static final Pose intakingBalls_3 = new Pose(135.000, 40.000, Math.toRadians(0));
-    private static final Pose finalShoot = new Pose(101,115);
-    private static final Pose finalShootC1 =new Pose(101.5,39.5);
-    private static final Pose finalShootC2 = new Pose(114,103);
+    private static final Pose ballStack_3 = new Pose(51, 36, Math.toRadians(180));
+    private static final Pose intakingBalls_3 = new Pose(10.5, 36, Math.toRadians(180));
+    private static final Pose finalShoot = new Pose(43,120);
+    private static final Pose finalShootC1 =new Pose(60,36);
+    private static final Pose finalShootC2 = new Pose(29,97);
 
 
     public long startShooting;
@@ -52,7 +52,7 @@ public class redGoalAuto extends LinearOpMode {
     public long startIntaking;
     public static int intakingThreshold=670;
     public static int shootingThreshold=2000;
-    public static int holdGateThreshold=1500;
+    public static int holdGateThreshold=2000;
     public static double intakeDelay = 0.3;
     public static double tTolerance=0.99;
     private PathChain Preload;
@@ -172,7 +172,7 @@ public class redGoalAuto extends LinearOpMode {
                 case "preload":
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==67){
                             robot.Mode = "Driving";
                             state = "toBallStack_1";
                             follower.followPath(toBallStack_1);
@@ -221,7 +221,7 @@ public class redGoalAuto extends LinearOpMode {
                 case "shootBall_1":
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==67){
                             robot.chillShooterSpeed=chillspeed;
                             robot.Mode = "Driving";
                             state = "toBallStack_2";
@@ -241,7 +241,6 @@ public class redGoalAuto extends LinearOpMode {
                     robot.intakingApproval=true;
                     if(!follower.isBusy()){
                         if(robot.curTime-startIntaking>=intakingThreshold){
-                            robot.intakingApproval=false;
                             robot.chillShooterSpeed=shootingSpeed;
                             state = "shootBall_2";
                             follower.followPath(shootBall_2);
@@ -251,9 +250,12 @@ public class redGoalAuto extends LinearOpMode {
                     }
                     break;
                 case "shootBall_2":
+                    if(follower.getPose().getY()<72){
+                        robot.intakingApproval=false;
+                    }
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==67){
                             robot.chillShooterSpeed=chillspeed;
                             robot.Mode = "Driving";
                             state = "toBallStack_3";
@@ -273,8 +275,7 @@ public class redGoalAuto extends LinearOpMode {
                     robot.intakingApproval=true;
                     if(!follower.isBusy()){
                         if(robot.curTime-startIntaking>=intakingThreshold){
-                            robot.intakingApproval=false;
-                            robot.chillShooterSpeed=shootingSpeed;
+                            robot.chillShooterSpeed=shootingSpeed-100;
                             state = "shootBall_3";
                             follower.followPath(shootBall_3);
 
@@ -284,9 +285,12 @@ public class redGoalAuto extends LinearOpMode {
                     }
                     break;
                 case "shootBall_3":
+                    if(follower.getPose().getY()<48){
+                        robot.intakingApproval=false;
+                    }
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
+                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==67){
                             robot.chillShooterSpeed=chillspeed;
                             robot.Mode = "Driving";
                             robot.chillShooterSpeed=0;
