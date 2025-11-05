@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.groups.SequentialGroup;
@@ -31,6 +32,7 @@ import dev.nextftc.ftc.components.BulkReadComponent;
  * 10. Shoot Third Ball -> (37, 107)
  */
 @Autonomous
+@Disabled
 public class FarBlueGoalAuto extends NextFTCOpMode {
 
     public FarBlueGoalAuto() {

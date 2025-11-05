@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @Configurable
 @Config
-@TeleOp
+@TeleOp(group = "Test")
 public class IntakeTest extends LinearOpMode {
     private DcMotorEx Intake;
 

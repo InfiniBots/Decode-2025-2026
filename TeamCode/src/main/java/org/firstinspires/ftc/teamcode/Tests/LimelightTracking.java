@@ -19,7 +19,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
-@Autonomous
+@Autonomous(group = "Test")
 public class LimelightTracking extends OpMode{
     private DcMotorEx Turret;
     private VoltageSensor Voltage;

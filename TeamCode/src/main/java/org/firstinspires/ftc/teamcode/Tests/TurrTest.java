@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 
-@TeleOp
+@TeleOp(group = "Test")
 @Config
 public class TurrTest extends LinearOpMode {
     private DcMotorEx TurrMotor;

@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import dev.nextftc.hardware.impl.MotorEx;
-@TeleOp
+@TeleOp(group = "Test")
 @Config
 public class turretMover extends LinearOpMode {
     private DcMotorEx Turret;

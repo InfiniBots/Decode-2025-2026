@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import java.util.List;
 
-@TeleOp
+@TeleOp(group = "Test")
 public class LimelightHoming extends LinearOpMode {
 
     private DcMotorEx turretMotor;

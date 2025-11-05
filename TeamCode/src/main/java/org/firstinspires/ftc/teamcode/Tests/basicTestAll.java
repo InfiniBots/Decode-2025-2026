@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.TeleOp.Drive;
 
 @Config
-@TeleOp
+@TeleOp(group = "Test")
 public class basicTestAll extends LinearOpMode {
     private Drive drive;
     public Servo Stopper1;
