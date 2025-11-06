@@ -66,6 +66,7 @@ public class redGoalAuto extends LinearOpMode {
     private PathChain toBallStack_3;
     private PathChain toIntakingBalls_3;
     private PathChain shootBall_3;
+    public static int turrPose=500;
 
     public void buildPaths(){
         Preload = follower.pathBuilder()
@@ -157,6 +158,7 @@ public class redGoalAuto extends LinearOpMode {
         follower.setStartingPose(start);
         buildPaths();
         robot.Mode = "Driving";
+        robot.turretGoPewPewV2.turretSetPose(turrPose);
         waitForStart();
         while (opModeIsActive()){
             follower.update();

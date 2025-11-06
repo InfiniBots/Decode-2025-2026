@@ -32,7 +32,7 @@ public class Robot {
     public void UpdateRobot(){
         curTime=System.currentTimeMillis();
         turretGoPewPewV2.updateShooter(curTime);
-       // turretGoPewPewV2.updateTurret(curTime);
+        turretGoPewPewV2.updateTurret(curTime);
         //turret aiming code goes outside of switch case want it always on
         switch (Mode){
             case "Driving":

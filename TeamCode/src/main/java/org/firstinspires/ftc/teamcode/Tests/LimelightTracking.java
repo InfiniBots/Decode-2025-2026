@@ -10,6 +10,7 @@ import com.pedropathing.control.PIDFController;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -19,8 +20,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
-@Autonomous(group = "Test")
-public class LimelightTracking extends OpMode{
+public class LimelightTracking{
     private DcMotorEx Turret;
     private VoltageSensor Voltage;
     private double targetPosition = 0;
@@ -38,6 +38,21 @@ public class LimelightTracking extends OpMode{
     private final double wishingX = 0.00;
     public LLResult result;
     public double error;
+    public double limit = 300;
+
+    public double conversionRate = (564/90);
+    Telemetry telemetry;
+    public LimelightTracking(LinearOpMode op, Telemetry telemetry){
+        this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        Turret = op.hardwareMap.get(DcMotorEx.class, "Turret");
+        Turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Turret.setDirection(DcMotorSimple.Direction.REVERSE);
+        lastTime = System.currentTimeMillis();
+        limelight = op.hardwareMap.get(Limelight3A.class, "limelight");
+        Voltage = op.hardwareMap.voltageSensor.iterator().next();
+        limelight.pipelineSwitch(1);
+        limelight.start();
+    }
 
     public double turret_PID(long curtime) {
         long dtime=curtime-lastTime;
@@ -51,31 +66,20 @@ public class LimelightTracking extends OpMode{
         turret_lastError = error;
         return ((turret_kp * error) + (turret_ki * turret_errorSum) + (turret_kd * errorChange)) * (12.0 / Voltage.getVoltage());
     }
-
-    public void init(){
-
-
-        Turret = hardwareMap.get(DcMotorEx.class, "Turret");
-        Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Turret.setDirection(DcMotorSimple.Direction.REVERSE);
-
-  }
-
-    public void start(){
-        telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        lastTime = System.currentTimeMillis();
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        Voltage = hardwareMap.voltageSensor.iterator().next();
-        limelight.pipelineSwitch(1);
-        limelight.start();
+    public void manualTurret(double manualTurretPower){
+        Turret.setPower(manualTurretPower);
     }
 
-    public void loop(){
+    public void update(){
         curTime=System.currentTimeMillis();
         result = limelight.getLatestResult();
         double x = result.getTx();
         error = wishingX - x;
+        if (Turret.getCurrentPosition()>limit&&Turret.getPower()>0){
+            Turret.setPower(0);
+        } else if (Turret.getCurrentPosition()< -limit&&Turret.getPower()<0){
+            Turret.setPower(0);
+        }
 
         if (result == null || !result.isValid()){
             isntGettingRecognized = true; // TEMPORARY

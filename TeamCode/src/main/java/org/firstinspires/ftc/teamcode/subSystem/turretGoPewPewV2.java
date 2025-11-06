@@ -44,6 +44,7 @@ public class turretGoPewPewV2 {
     private int turret_target;
     public static double ticksPRotation=360;
     public double ticksPerAng=(ticksPRotation/360.0);
+    public boolean lime=false;
 
     public turretGoPewPewV2(LinearOpMode op, boolean isRed, Telemetry telemetry){
         this.telemetry=telemetry;
@@ -76,6 +77,9 @@ public class turretGoPewPewV2 {
         shooter_lastError = error;
         double power = ((shooter_kp * error) + (shooter_ki * shooter_errorSum) + (shooter_kd * errorChange) + ((0.0007448464-(3.3333219e-7*targetVelocity)+(8.791839e-11*targetVelocity*targetVelocity)) * targetVelocity))* (12.0 / Voltage.getVoltage());
         return power;
+    }
+    public void turretSetPose(int targetPose){
+        turret_target=targetPose;
     }
     public double turret_PID(double currPos, double targetPos, long time){
         double error = targetPos - currPos;
@@ -112,11 +116,13 @@ public class turretGoPewPewV2 {
         telemetry.addData("shooter act speed",TurrMotor.getVelocity());
     }
     public void updateTurret(long time){
-        llResult = limelight.getLatestResult();
-        if (llResult != null&&llResult.isValid()) {
-            double angle = distanceAprilTag(llResult.getTx());
-            telemetry.addData("limelight angle working",true);
-            turret_target=(int)(Turret.getCurrentPosition()+ticksPerAng*angle);
+        if(lime) {
+            llResult = limelight.getLatestResult();
+            if (llResult != null && llResult.isValid()) {
+                double angle = distanceAprilTag(llResult.getTx());
+                telemetry.addData("limelight angle working", true);
+                turret_target = (int) (Turret.getCurrentPosition() + ticksPerAng * angle);
+            }
         }
         long deltaTime=time-turret_lastTime;
         turret_lastTime=time;
