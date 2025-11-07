@@ -53,9 +53,10 @@ public class TeleOp extends LinearOpMode {
         public ArrayList<Double> cycles = new ArrayList<>();
         public long cycleTime;
         public double cycleAvg = 0;
-        public static boolean usePedroMode = true;
+        public static boolean usePedroMode = false;
         private Follower follower;
         private boolean prevRightStickButton = false;
+        public static double sensitivity=0.75;
 
     enum State {
         GENERAL_MOVEMENT,
@@ -75,6 +76,7 @@ public class TeleOp extends LinearOpMode {
         }
         State state;
         public PathChain park;
+        public boolean once=true;
         public void buildPath(){
             park = follower.pathBuilder()
                     .addPath(
@@ -169,7 +171,7 @@ public class TeleOp extends LinearOpMode {
             } else {
                 double x = -gamepad1.left_stick_x * 1.1;
                 double y = -gamepad1.left_stick_y;
-                double turn = gamepad1.right_stick_x;
+                double turn = -gamepad1.right_stick_x*sensitivity;
 
                 double theta = Math.atan2(y, x);
                 double power = Math.hypot(x, y);
@@ -183,21 +185,26 @@ public class TeleOp extends LinearOpMode {
                 double backLeft = power * sin / max + turn;
                 double backRight = power * cos / max - turn;
 
-                if ((power + Math.abs(turn)) > 0.85) {
+                if ((power + Math.abs(turn)) > 1) {
                     frontLeft /= power + Math.abs(turn);
                     frontRight /= power + Math.abs(turn);
                     backLeft /= power + Math.abs(turn);
                     backRight /= power + Math.abs(turn);
                 }
 
-                    frontLeftMotor.setPower(frontLeft * 0.85);
-                    backLeftMotor.setPower(backLeft * 0.85);
-                    frontRightMotor.setPower(frontRight * 0.85);
-                    backRightMotor.setPower(backRight * 0.85);
+                    frontLeftMotor.setPower(frontLeft);
+                    backLeftMotor.setPower(backLeft);
+                    frontRightMotor.setPower(frontRight);
+                    backRightMotor.setPower(backRight);
                 }
                 if(gamepad1.x){
-                    buildPath();
+                    if(once) {
+                        buildPath();
+                        once=false;
+                    }
                     follower.followPath(park);
+                }else{
+                    once=true;
                 }
                 switch (state) {
                     case GENERAL_MOVEMENT:

@@ -8,11 +8,13 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.TeleOp.LimelightTurretTracker;
 
 import dev.nextftc.hardware.impl.MotorEx;
 @TeleOp(group = "Test")
@@ -90,6 +92,10 @@ public class turretMover extends LinearOpMode {
                 Turret.setPower(0);
                 lastTime = curTime;
 
+            }
+            if(gamepad1.a){
+                Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
             telemetry.addData("Turr pos",Turret.getCurrentPosition());
             telemetry.addData("target",turret_target);

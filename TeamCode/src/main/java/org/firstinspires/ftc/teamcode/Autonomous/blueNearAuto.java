@@ -22,23 +22,23 @@ public class blueNearAuto extends LinearOpMode {
     public Follower follower;
     public static boolean openGate=true;
     public String state = "start";
-    private static final Pose start =new Pose(34, 135.3, Math.toRadians(180));
-    private static final Pose shooting =  new Pose(39, 106.000, Math.toRadians(-139));
+    private static final Pose start =new Pose(32.5, 135.3, Math.toRadians(180));
+    private static final Pose shooting =  new Pose(37.5, 106.000, Math.toRadians(-139));
 
     private static final Pose ballStack_1 = new Pose(51, 84, Math.toRadians(180));
-    private static final Pose intakingBalls_1 = new Pose(18, 84, Math.toRadians(180));
-    private static final Pose openGateControl = new Pose(27, 80, Math.toRadians(0));
+    private static final Pose intakingBalls_1 = new Pose(16.5, 84, Math.toRadians(180));
+    private static final Pose openGateControl = new Pose(26, 80, Math.toRadians(0));
 
-    private static final Pose intakingBalls_1_openGate = new Pose(18.000, 79.000, Math.toRadians(180));
+    private static final Pose intakingBalls_1_openGate = new Pose(16.500, 79.000, Math.toRadians(180));
 
 
     private static final Pose ballStack_2 = new Pose(51, 59, Math.toRadians(180));
-    private static final Pose intakingBalls_2 = new Pose(10.5, 60, Math.toRadians(180));
+    private static final Pose intakingBalls_2 = new Pose(9, 60, Math.toRadians(180));
     private static final Pose noTouchGate = new Pose(58,56);
 
     private static final Pose ballStack_3 = new Pose(51, 36, Math.toRadians(180));
-    private static final Pose intakingBalls_3 = new Pose(10.5, 36, Math.toRadians(180));
-    public static final Pose finalShoots = new Pose(43,120, Math.toRadians(-120));
+    private static final Pose intakingBalls_3 = new Pose(9, 36, Math.toRadians(180));
+    public static final Pose finalShoots = new Pose(45,122, Math.toRadians(-120));
     private static final Pose finalShootC1 =new Pose(60,36);
     private static final Pose finalShootC2 = new Pose(29,97);
 

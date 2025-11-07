@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.finalShoots;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
-import static org.firstinspires.ftc.teamcode.TeleOp.Robot.isRed;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -13,6 +12,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -22,25 +22,23 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.Tests.LimelightTracking;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.ArrayList;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp
+@TeleOp
 @Config
-public class TeleOp2 extends LinearOpMode {
-
-    public boolean isReds = isRed;
+public class tempTeleop extends LinearOpMode {
+    public boolean isRed=true;
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
     private DcMotor backRightMotor;
     private DcMotorEx IntakeMotor;
     private ElapsedTime stopperDelayTimer = new ElapsedTime();
-    private DcMotorEx Turr;
-    public static double kp = 0.02;
-    public static double ki = 0.00000006;
-    public static double kd = 0.003;
+    private DcMotorEx Turret;
+    public static double kp = 0.002;
+    public static double ki = 0.0;
+    public static double kd = 0.0;
     public static double kf = 0.0;
     private double lastError = 0;
     private double errorSum = 0;
@@ -59,14 +57,21 @@ public class TeleOp2 extends LinearOpMode {
     public static boolean usePedroMode = true;
     private Follower follower;
     private boolean prevRightStickButton = false;
-    private LimelightTracking tracker;
-    private boolean manual=false;
-
 
     enum State {
         GENERAL_MOVEMENT,
         PEW_PEW
 
+    }
+    public PathChain park;
+    public boolean once=true;
+    public void buildPath(){
+        park = follower.pathBuilder()
+                .addPath(
+                        new BezierLine(follower.getPose(), (isRed?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
+                )
+                .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
+                .build();
     }
 
     public double PID(double currentVelocity, double targetVelocity, long time) {
@@ -80,16 +85,6 @@ public class TeleOp2 extends LinearOpMode {
         return ((kp * error) + (ki * errorSum) + (kd * errorChange) + ((0.0007448464 - (3.3333219e-7 * targetVelocity) + (8.791839e-11 * targetVelocity * targetVelocity)) * targetVelocity));//added new velocity thingy
     }
     State state;
-    public PathChain park;
-    public boolean once=true;
-    public void buildPath(){
-        park = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(follower.getPose(), (isRed?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
-                )
-                .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
-                .build();
-    }
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -97,7 +92,6 @@ public class TeleOp2 extends LinearOpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(isRed?finalShoot:finalShoots);
         follower.update();
-
 
         IntakeMotor = hardwareMap.get(DcMotorEx.class, "Intake");
         frontLeftMotor = hardwareMap.get(DcMotor.class, "leftFront");
@@ -124,7 +118,8 @@ public class TeleOp2 extends LinearOpMode {
         Stopper1 = hardwareMap.get(Servo.class, "Stopper1");
         Stopper2 = hardwareMap.get(Servo.class, "Stopper2");
 
-
+        Turret = hardwareMap.get(DcMotorEx.class, "Turret");
+        Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         IntakeMotor.setPower(0);
@@ -132,7 +127,7 @@ public class TeleOp2 extends LinearOpMode {
         state = State.GENERAL_MOVEMENT;
 
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        tracker = new LimelightTracking(this,telemetry);
+
 
         waitForStart();
         lastTime = System.currentTimeMillis();
@@ -143,7 +138,6 @@ public class TeleOp2 extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            tracker.update();
             follower.update();
 
             LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
@@ -163,22 +157,31 @@ public class TeleOp2 extends LinearOpMode {
                     follower.setTeleOpDrive(0, 0, 0, true);
                 }
             }
-
+            if(gamepad1.x){
+                if(once) {
+                    buildPath();
+                    once=false;
+                }
+                follower.followPath(park);
+            }else{
+                once=true;
+            }
             prevRightStickButton = rsb;
-
 
             if (usePedroMode) {
                 follower.setTeleOpDrive(
                         -gamepad1.left_stick_y,
                         -gamepad1.left_stick_x * 1.1,
-                        gamepad1.right_stick_x,
+                        -gamepad1.right_stick_x,
                         true
                 );
+                if(gamepad1.left_stick_y+gamepad1.left_stick_x+gamepad1.right_stick_x==0){
 
+                }
             } else {
                 double x = -gamepad1.left_stick_x * 1.1;
                 double y = -gamepad1.left_stick_y;
-                double turn = gamepad1.right_stick_x;
+                double turn = -gamepad1.right_stick_x;
 
                 double theta = Math.atan2(y, x);
                 double power = Math.hypot(x, y);
@@ -204,13 +207,6 @@ public class TeleOp2 extends LinearOpMode {
                 frontRightMotor.setPower(frontRight * 0.85);
                 backRightMotor.setPower(backRight * 0.85);
             }
-            if(gamepad1.x){
-                if(once) {
-                    buildPath();
-                    once=false;
-                }
-                follower.followPath(park);
-            }
             switch (state) {
                 case GENERAL_MOVEMENT:
                     TopFlywheel.setPower(0);
@@ -225,16 +221,14 @@ public class TeleOp2 extends LinearOpMode {
                     }
 
                     if (gamepad1.dpad_left) {
-                        tracker.manualTurret(-0.5);
+                        Turret.setPower(-0.5);
                     } else if (gamepad1.dpad_right) {
-                        tracker.manualTurret(0.5);
-                    } else if(manual) {
-                        tracker.manualTurret(0);
+                        Turret.setPower(0.5);
+                    } else {
+                        Turret.setPower(0);
                     }
-
-
                     Stopper1.setPosition(0.62);
-                    Stopper2.setPosition(0.56);
+                    Stopper2.setPosition(0.57);
 
                     if (gamepad1.right_bumper) {
                         stopperDelayTimer.reset();
@@ -256,7 +250,7 @@ public class TeleOp2 extends LinearOpMode {
 
                     if (gamepad2.right_bumper) {
                         Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        Stopper2.setPosition(0.77);
                     }
                     if (gamepad1.left_bumper) {
                         state = State.GENERAL_MOVEMENT;
@@ -281,11 +275,11 @@ public class TeleOp2 extends LinearOpMode {
             telemetry.addData("TopFlywheel Velocity", TopFlywheel.getVelocity());
             telemetry.addData("BottomFlywheel Velocity", BottomFlywheel.getVelocity());
             telemetry.addData("Target Speed", ticksPerSecond);
-            telemetry.addData("shooter Error", ticksPerSecond - TopFlywheel.getVelocity());
+            telemetry.addData("Error", ticksPerSecond - TopFlywheel.getVelocity());
             telemetry.addData("Power", TopFlywheel.getPower());
             telemetry.addData("Current of shooter", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("Stopper1 Position: ", Stopper1.getPosition());
-            telemetry.addData("Stopper2 Position: ", Stopper2.getPosition());
+            telemetry.addData("Stopper1 Position: ", 0.77);
+            telemetry.addData("Stopper2 Position: ", 0.7);
             telemetry.addData("Loading   *Shooting*", " ");
             telemetry.addData("               ↑    ", "");
             telemetry.addData("Drive Mode: ", usePedroMode ? "Pedro Pathing" : "Regular Mecanum");
@@ -294,6 +288,7 @@ public class TeleOp2 extends LinearOpMode {
             telemetry.addData("Control Hub Current: ", totalCurrentAmps);
             telemetry.addData("Expansion Hub 2: ", expansionCurrentAmps);
             telemetry.addData("intake current", IntakeMotor.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("leftRear", backLeftMotor.getPower());
             telemetry.update();
 
         }

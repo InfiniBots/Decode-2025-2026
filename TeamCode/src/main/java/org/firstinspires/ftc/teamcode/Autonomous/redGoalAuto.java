@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import static org.firstinspires.ftc.teamcode.TeleOp.Robot.isRed;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -20,6 +22,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Config
 @Autonomous
 public class redGoalAuto extends LinearOpMode {
+    private boolean issRed=isRed;
     private Robot robot;
     public Follower follower;
     public static boolean openGate=true;
@@ -27,46 +30,42 @@ public class redGoalAuto extends LinearOpMode {
     private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
     private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
 
-    private static final Pose ballStack_1 = new Pose(96.000, 84.000, Math.toRadians(0));
-    private static final Pose intakingBalls_1 = new Pose(126.500, 84.000, Math.toRadians(0));
-    private static final Pose openGateControl = new Pose(116, 76, Math.toRadians(0));
+    private static final Pose ballStack_1 = new Pose(96.000, 83.000, Math.toRadians(0));
+    private static final Pose intakingBalls_1 = new Pose(122.500, 83.000, Math.toRadians(0));
+    private static final Pose openGateControl = new Pose(102, 81, Math.toRadians(0));
 
-    private static final Pose intakingBalls_1_openGate = new Pose(128.000, 79.000, Math.toRadians(0));
-
-
-    private static final Pose ballStack_2 = new Pose(96.000, 60.000, Math.toRadians(0));
-    private static final Pose intakingBalls_2 = new Pose(135.000, 60.000, Math.toRadians(0));
+    private static final Pose intakingBalls_1_openGate = new Pose(131, 75, Math.toRadians(-90));
+    private static final Pose turnOffIntake1 = new Pose(121.00, 81);
+    private static final Pose ballStack_2 = new Pose(96.000, 59.000, Math.toRadians(0));
+    private static final Pose intakingBalls_2 = new Pose(131.000, 59.000, Math.toRadians(0));
     private static final Pose noTouchGate = new Pose(98,50);
-
-    private static final Pose ballStack_3 = new Pose(94.000, 40.000, Math.toRadians(0));
-    private static final Pose intakingBalls_3 = new Pose(135.000, 40.000, Math.toRadians(0));
-    public static final Pose finalShoot = new Pose(101,115, Math.toRadians(-44));
+    private static final Pose turnOffIntake2 = new Pose(120.00, 59);
+    private static final Pose ballStack_3 = new Pose(94.000, 39.000, Math.toRadians(0));
+    private static final Pose intakingBalls_3 = new Pose(131.000, 39.000, Math.toRadians(0));
+    public static final Pose finalShoot = new Pose(94,117, Math.toRadians(-44));
     private static final Pose finalShootC1 =new Pose(101.5,39.5);
-    private static final Pose finalShootC2 = new Pose(114,103);
+    private static final Pose finalShootC2 = new Pose(100,106);
+    private static final Pose turnOffIntake3 = new Pose(117, 47);
 
 
     public long startShooting;
     public long startGate;
-    public static int shootingSpeed=1450;
+    public static int shootingSpeed=1420;
     public static int chillspeed=670;
     public long startIntaking;
     public static int intakingThreshold=670;
-    public static int shootingThreshold=2000;
+    public static int shootingThreshold=3000;
     public static int holdGateThreshold=1500;
-    public static double intakeDelay = 0.3;
-    public static double tTolerance=0.99;
     private PathChain Preload;
     private PathChain toBallStack_1;
-    private PathChain toIntakingBalls_1;
-    private PathChain toIntakingBalls_1_openGate;
+    private PathChain combinedIntakePath_1;
     private PathChain shootBall_1;
     private PathChain toBallStack_2;
-    private PathChain toIntakingBalls_2;
-    private PathChain shootBall_2;
+    private PathChain combinedIntakePath_2;
     private PathChain toBallStack_3;
-    private PathChain toIntakingBalls_3;
-    private PathChain shootBall_3;
-    public static int turrPose=500;
+    private PathChain combinedIntakePath_3;
+    //public static int turrPose=650;
+    public static double maxThresh=0.67;
 
     public void buildPaths(){
         Preload = follower.pathBuilder()
@@ -82,17 +81,18 @@ public class redGoalAuto extends LinearOpMode {
                 .setLinearHeadingInterpolation(shooting.getHeading(), ballStack_1.getHeading())
                 .build();
 
-        toIntakingBalls_1 =  follower.pathBuilder()
+        combinedIntakePath_1 =  follower.pathBuilder()
                 .addPath(
                         new BezierLine(ballStack_1, intakingBalls_1)
                 )
                 .setConstantHeadingInterpolation(intakingBalls_1.getHeading())
-                .build();
-        toIntakingBalls_1_openGate = follower.pathBuilder()
                 .addPath(
                         new BezierCurve(intakingBalls_1,openGateControl,intakingBalls_1_openGate)
                 )
-                .setLinearHeadingInterpolation(ballStack_1.getHeading(),intakingBalls_1_openGate.getHeading())
+                .setLinearHeadingInterpolation(intakingBalls_1.getHeading(),intakingBalls_1_openGate.getHeading())
+                .addPoseCallback(turnOffIntake1, () -> {
+                    robot.intakingApproval = false;
+                }, 0.7)
                 .build();
 
         shootBall_1 =  follower.pathBuilder()
@@ -109,18 +109,20 @@ public class redGoalAuto extends LinearOpMode {
                 .setLinearHeadingInterpolation(shooting.getHeading(), ballStack_2.getHeading())
                 .build();
 
-        toIntakingBalls_2 =  follower.pathBuilder()
+        combinedIntakePath_2 =  follower.pathBuilder()
                 .addPath(
                         new BezierLine(ballStack_2, intakingBalls_2)
                 )
                 .setConstantHeadingInterpolation(intakingBalls_2.getHeading())
-                .build();
-
-        shootBall_2 =  follower.pathBuilder()
                 .addPath(
                         new BezierCurve(intakingBalls_2,noTouchGate, shooting)
                 )
                 .setLinearHeadingInterpolation(intakingBalls_2.getHeading(), shooting.getHeading())
+                .addPoseCallback(turnOffIntake2,()->{
+                    robot.intakingApproval=false;
+                    robot.chillShooterSpeed=shootingSpeed;
+                    follower.setMaxPower(1);
+                },0.6)
                 .build();
 
         toBallStack_3 =  follower.pathBuilder()
@@ -130,35 +132,51 @@ public class redGoalAuto extends LinearOpMode {
                 .setLinearHeadingInterpolation(shooting.getHeading(), ballStack_3.getHeading())
                 .build();
 
-        toIntakingBalls_3 =  follower.pathBuilder()
+        combinedIntakePath_3 =  follower.pathBuilder()
                 .addPath(
                         new BezierLine(ballStack_3, intakingBalls_3)
                 )
                 .setConstantHeadingInterpolation(intakingBalls_3.getHeading())
-                .build();
-
-        shootBall_3 =  follower.pathBuilder()
                 .addPath(
                         new BezierCurve(intakingBalls_3,finalShootC1,finalShootC2 ,finalShoot)
                 )
                 .setTangentHeadingInterpolation()
                 .setReversed()
+                .addPoseCallback(turnOffIntake3,()->{
+                    robot.intakingApproval=false;
+                    robot.chillShooterSpeed=shootingSpeed+40;
+                    follower.setMaxPower(1);
+                },0.6)
                 .build();
     }
-    private boolean isAtPose() {
-        return follower.getCurrentPath().getClosestPointTValue()>=tTolerance;
-    }
-
-
     @Override
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry=new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         robot=new Robot(this,telemetry);
+        /*if(!issRed){
+            start=start.mirror();
+            shooting=shooting.mirror();
+            ballStack_1=ballStack_1.mirror();
+            ballStack_2=ballStack_2.mirror();
+            ballStack_3=ballStack_3.mirror();
+            intakingBalls_1=intakingBalls_1.mirror();
+            intakingBalls_2=intakingBalls_2.mirror();
+            intakingBalls_3=intakingBalls_3.mirror();
+            noTouchGate=noTouchGate.mirror();
+            intakingBalls_1_openGate=intakingBalls_1_openGate.mirror();
+            openGateControl=openGateControl.mirror();
+            turnOffIntake1=turnOffIntake1.mirror();
+            turnOffIntake2=turnOffIntake2.mirror();
+            turnOffIntake3=turnOffIntake3.mirror();
+            finalShoot=finalShoot.mirror();
+            finalShootC1=finalShootC1.mirror();
+            finalShootC2=finalShootC2.mirror();
+        }*/
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(start);
         buildPaths();
         robot.Mode = "Driving";
-        robot.turretGoPewPewV2.turretSetPose(turrPose);
+        // robot.turretGoPewPewV2.turretSetPose(turrPose);
         waitForStart();
         while (opModeIsActive()){
             follower.update();
@@ -185,39 +203,22 @@ public class redGoalAuto extends LinearOpMode {
                     break;
                 case "toBallStack_1":
                     if(!follower.isBusy()){
-                        state = "intakingBalls_1";
-                        follower.followPath(toIntakingBalls_1);
+                        state = "comboIntake1";
+                        robot.intakingApproval = true;
+                        follower.followPath(combinedIntakePath_1);
+                        follower.setMaxPower(maxThresh);
                     }
                     break;
-                case "intakingBalls_1":
-                    robot.intakingApproval = true;
-                    if (!follower.isBusy()) {
-                        if (openGate) {
-                            if (robot.curTime - startIntaking >= (intakingThreshold)) {
-                                robot.intakingApproval = false;
-                                follower.followPath(toIntakingBalls_1_openGate);
-                                startGate=robot.curTime;
-                                state="gate";
-                            }
-                        } else {
-                            if (robot.curTime - startIntaking >= intakingThreshold) {
-                                robot.intakingApproval = false;
-                                robot.chillShooterSpeed=shootingSpeed;
-                                state = "shootBall_1";
-                                follower.followPath(shootBall_1);
-                            }
-                        }
-                    } else {
-                        startIntaking = robot.curTime;
-                    }
-                    break;
-                case "gate":
+                case "comboIntake1":
                     if(!follower.isBusy()) {
-                        if (robot.curTime - startGate >= (holdGateThreshold)) {
+                        if(robot.curTime-startGate>=holdGateThreshold) {
                             robot.chillShooterSpeed = shootingSpeed;
                             state = "shootBall_1";
                             follower.followPath(shootBall_1);
+                            follower.setMaxPower(1);
                         }
+                    }else{
+                        startGate = robot.curTime;
                     }
                     break;
                 case "shootBall_1":
@@ -235,24 +236,13 @@ public class redGoalAuto extends LinearOpMode {
                     break;
                 case "toBallStack_2":
                     if(!follower.isBusy()){
-                        state = "intakingBalls_2";
-                        follower.followPath(toIntakingBalls_2);
+                        robot.intakingApproval=true;
+                        state = "comboIntake2";
+                        follower.followPath(combinedIntakePath_2);
+                        follower.setMaxPower(maxThresh);
                     }
                     break;
-                case "intakingBalls_2":
-                    robot.intakingApproval=true;
-                    if(!follower.isBusy()){
-                        if(robot.curTime-startIntaking>=intakingThreshold){
-                            robot.intakingApproval=false;
-                            robot.chillShooterSpeed=shootingSpeed;
-                            state = "shootBall_2";
-                            follower.followPath(shootBall_2);
-                        }
-                    }else{
-                        startIntaking = robot.curTime;
-                    }
-                    break;
-                case "shootBall_2":
+                case "comboIntake2":
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
                         if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
@@ -267,25 +257,13 @@ public class redGoalAuto extends LinearOpMode {
                     break;
                 case "toBallStack_3":
                     if(!follower.isBusy()){
-                        state = "intakingBalls_3";
-                        follower.followPath(toIntakingBalls_3);
+                        robot.intakingApproval=true;
+                        state = "comboIntake3";
+                        follower.followPath(combinedIntakePath_3);
+                        follower.setMaxPower(maxThresh);
                     }
                     break;
-                case "intakingBalls_3":
-                    robot.intakingApproval=true;
-                    if(!follower.isBusy()){
-                        if(robot.curTime-startIntaking>=intakingThreshold){
-                            robot.intakingApproval=false;
-                            robot.chillShooterSpeed=shootingSpeed;
-                            state = "shootBall_3";
-                            follower.followPath(shootBall_3);
-
-                        }
-                    }else{
-                        startIntaking = robot.curTime;
-                    }
-                    break;
-                case "shootBall_3":
+                case "comboIntake3":
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
                         if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
@@ -301,9 +279,7 @@ public class redGoalAuto extends LinearOpMode {
             robot.UpdateRobot();
             follower.update();
             telemetry.addData("ballslaunched",robot.ballsLaunched);
-            telemetry.addData("translational error",follower.getTranslationalError());
-            telemetry.addData("drive error",follower.getDriveError());
-            telemetry.addData("heading error",follower.getHeadingError());
+            telemetry.addData("pose",follower.getPose());
             telemetry.update();
         }
     }

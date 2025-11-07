@@ -32,7 +32,8 @@ public class Robot {
     public void UpdateRobot(){
         curTime=System.currentTimeMillis();
         turretGoPewPewV2.updateShooter(curTime);
-        turretGoPewPewV2.updateTurret(curTime);
+        turretGoPewPewV2.holdTurret();
+       // turretGoPewPewV2.updateTurret(curTime);
         //turret aiming code goes outside of switch case want it always on
         switch (Mode){
             case "Driving":
@@ -59,17 +60,22 @@ public class Robot {
                 if(continuous) {
                     double currentSpeed = turretGoPewPewV2.shooterIsAtSpeed()?turretGoPewPewV2.shooter_target:turretGoPewPewV2.shooterGetSpeed();
                     if (currentSpeed < lastSpeed) {
+                        lastSpeed = currentSpeed;
                         lowering = true;
                         telemetry.addData("in1","inside");
                     }
-                    if (lowering && currentSpeed > lastSpeed) {
+                    else if (lowering && currentSpeed > lastSpeed) {
+                        lastSpeed = currentSpeed;
                         ballsLaunched++;
                         lowering = false;
                         telemetry.addData("in2","inside2");
+                    }else{
+                        lastSpeed = currentSpeed;
                     }
-                    lastSpeed = currentSpeed;
+                    telemetry.addData("currentSpeed",currentSpeed);
                 }
                 telemetry.addData("lastspeed",lastSpeed);
+
                 telemetry.addData("State: ",Mode);
                 telemetry.addData("Continuous: ",continuous);
                 break;

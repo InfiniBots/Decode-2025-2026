@@ -34,9 +34,9 @@ public class turretGoPewPewV2 {
     private long shooter_lastTime=0;
     public int shooter_target;
     //pid for turret
-    public static double turret_kp = 0.002;
-    public static double turret_ki = 0.0;
-    public static double turret_kd = 0.0;
+    public static double turret_kp = 0.02;
+    public static double turret_ki = 0.00000006;
+    public static double turret_kd = 0.003;
     private double turret_lastError = 0;
 
     private double turret_errorSum = 0;
@@ -55,12 +55,16 @@ public class turretGoPewPewV2 {
         Voltage = op.hardwareMap.voltageSensor.iterator().next();
         limelight = op.hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(1);
+        Turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
        // shotAngler = op.hardwareMap.get(Servo.class,"shotAngler");
 
 
         TurrMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         TurrMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         TurrMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+    public void holdTurret(){
+        Turret.setPower(0);
     }
     public double distanceAprilTag(double ta) {
         double scale = 30692.95; // value requires fine tuning will do later
@@ -128,6 +132,7 @@ public class turretGoPewPewV2 {
         turret_lastTime=time;
         double pow=turret_PID(Turret.getCurrentPosition(),turret_target,deltaTime);
         Turret.setPower(pow);
+        telemetry.addData("Turret pos",Turret.getCurrentPosition());
     }
     public boolean shooterIsAtSpeed(){
         if(Math.abs(shooterGetSpeed()- shooter_target)<67){
