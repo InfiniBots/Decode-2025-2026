@@ -34,7 +34,7 @@ public class LimelightTracking{
     private double turret_lastError = 0;
     private double turret_errorSum = 0;
     public static double ticksPRotation = 2288;
-    public double ticksPerAng = (ticksPRotation / 360.0);
+    public double ticksPerAng = (Turret.getCurrentPosition() / 360.0) * (384.5 * (140/16)) ;
     private final double wishingX = 0.00;
     public LLResult result;
     public double error;
@@ -75,9 +75,9 @@ public class LimelightTracking{
         result = limelight.getLatestResult();
         double x = result.getTx();
         error = wishingX - x;
-        if (Turret.getCurrentPosition()>limit&&Turret.getPower()>0){
+        if (ticksPerAng > limit && Turret.getPower() != 0) {
             Turret.setPower(0);
-        } else if (Turret.getCurrentPosition()< -limit&&Turret.getPower()<0){
+        } else if (ticksPerAng < -limit &&Turret.getPower() != 0){
             Turret.setPower(0);
         }
 
