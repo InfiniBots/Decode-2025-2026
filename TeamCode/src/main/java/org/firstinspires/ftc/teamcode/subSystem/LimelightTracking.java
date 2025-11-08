@@ -103,6 +103,7 @@ public class LimelightTracking{
         telemetry.update();
 
     }
+                                                                                                
     public int shootingSpeed(){
         LLResult llResult = limelight.getLatestResult();
         if (llResult != null&&llResult.isValid()) {
@@ -112,6 +113,11 @@ public class LimelightTracking{
         }else{
             return -4167;
         }
+    }
+
+    public void disableTurret(){
+        Turret.setPower(0);
+        telemetry.addData("Disabled !", " ");
     }
     private double distanceAprilTag(double ta) {
         double scale = 30692.95;
