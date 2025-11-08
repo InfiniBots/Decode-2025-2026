@@ -21,7 +21,7 @@ public class turretGoPewPewV2 {
     private Servo shotAngler;
     public boolean isRed;
     public Telemetry telemetry;
-    public double distance;
+    public double distance;//limelight gets in cm
     public LLResult llResult;
     //pid for shooter
     public static double shooter_kp = 0.002;

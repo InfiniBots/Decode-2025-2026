@@ -50,7 +50,7 @@ public class redGoalAuto extends LinearOpMode {
 
     public long startShooting;
     public long startGate;
-    public static int shootingSpeed=1420;
+    public static int shootingSpeed=1467;
     public static int chillspeed=670;
     public long startIntaking;
     public static int intakingThreshold=670;

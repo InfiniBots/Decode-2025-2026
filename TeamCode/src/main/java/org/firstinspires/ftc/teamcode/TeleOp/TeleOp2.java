@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.Tests.LimelightTracking;
+import org.firstinspires.ftc.teamcode.subSystem.LimelightTracking;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.ArrayList;
 
@@ -143,7 +143,7 @@ public class TeleOp2 extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            tracker.update();
+            tracker.updateTurret();
             follower.update();
 
             LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
@@ -171,7 +171,7 @@ public class TeleOp2 extends LinearOpMode {
                 follower.setTeleOpDrive(
                         -gamepad1.left_stick_y,
                         -gamepad1.left_stick_x * 1.1,
-                        gamepad1.right_stick_x,
+                        -gamepad1.right_stick_x,
                         true
                 );
 

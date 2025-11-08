@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.TeleOp.LimelightTurretTracker;
+import org.firstinspires.ftc.teamcode.subSystem.LimelightTracking;
 
 import dev.nextftc.hardware.impl.MotorEx;
 @TeleOp(group = "Test")
@@ -24,7 +25,7 @@ public class turretMover extends LinearOpMode {
     private Limelight3A limelight;
     private LLResult llResult;
     private VoltageSensor Voltage;
-    private GoBildaPinpointDriver pinpoint;
+    private LimelightTracking lltracking;
     private long curTime;
     private long deltaTime;
     private long lastTime;
@@ -41,23 +42,7 @@ public class turretMover extends LinearOpMode {
     public static int turret_target=0;
     public static double ticksPRotation = 2288;
     public double ticksPerAng = (ticksPRotation / 360.0);
-    public void configurePinpoint(){
-        pinpoint.setOffsets(-3.38, -4.495, DistanceUnit.INCH);
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-    }
 
-    public void updateTurret(long time) {
-        llResult = limelight.getLatestResult();
-        if (llResult != null && llResult.isValid()) {
-            double angle = llResult.getTx();
-            telemetry.addData("limelight angle", angle);
-            turret_target = (int) (Turret.getCurrentPosition() + ticksPerAng * angle);
-            telemetry.addData("targetPos",turret_target);
-        }
-        double pow = turret_PID(Turret.getCurrentPosition(), turret_target, time);
-        Turret.setPower(pow);
-    }
 
     public double turret_PID(double currPos, double targetPos, long curtime) {
         long dtime=curtime-lastTime;
@@ -75,24 +60,16 @@ public class turretMover extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
+        lltracking = new LimelightTracking(this, telemetry);
         Turret = hardwareMap.get(DcMotorEx.class, "Turret");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         Voltage = hardwareMap.voltageSensor.iterator().next();
         limelight.pipelineSwitch(1);
         lastTime = System.currentTimeMillis();
-        configurePinpoint();
         waitForStart();
         while (opModeIsActive()) {
             curTime = System.currentTimeMillis();
-            if (gamepad1.x||turrOn) {
-                telemetry.addData("power",Turret.getPower());
-                updateTurret(curTime);
-            } else {
-                Turret.setPower(0);
-                lastTime = curTime;
-
-            }
+            lltracking.updateTurret();
             if(gamepad1.a){
                 Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
