@@ -234,8 +234,8 @@ public class tempTeleop extends LinearOpMode {
                     } else {
                         Turret.setPower(0);
                     }
-                    Stopper1.setPosition(0.62);
-                    Stopper2.setPosition(0.57);
+                    Stopper1.setPosition(0.767);
+                    Stopper2.setPosition(0.62);
 
                     if (gamepad1.right_bumper) {
                         state = State.PEW_PEW;
@@ -248,8 +248,8 @@ public class tempTeleop extends LinearOpMode {
                 case PEW_PEW:
                     ticksPerSecond= lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed():ticksPerSecond;
                     if (gamepad2.a) {
-                        Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        Stopper1.setPosition(1);
+                        Stopper2.setPosition(1);
                     }
                     if (gamepad1.left_bumper) {
                         state = State.GENERAL_MOVEMENT;
@@ -261,8 +261,8 @@ public class tempTeleop extends LinearOpMode {
                     IntakeMotor.setPower(-1);
 
                     if (Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < stopperThreshold) {
-                        Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        Stopper1.setPosition(1);
+                        Stopper2.setPosition(1);
                     }
 
                     break;

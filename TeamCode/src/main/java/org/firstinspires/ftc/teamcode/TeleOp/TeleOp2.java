@@ -273,8 +273,8 @@ public class TeleOp2 extends LinearOpMode {
                     IntakeMotor.setPower(-1);
 
                     if (Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < stopperThreshold) {
-                        Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        Stopper1.setPosition(1);
+                        Stopper2.setPosition(1);
                     }
 
                     break;

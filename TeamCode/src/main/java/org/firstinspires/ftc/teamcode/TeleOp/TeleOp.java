@@ -226,8 +226,8 @@ public class TeleOp extends LinearOpMode {
                     } else {
                         Turret.setPower(0);
                     }
-                    Stopper1.setPosition(0.62);
-                    Stopper2.setPosition(0.56);
+                        Stopper1.setPosition(0.767);
+                        Stopper2.setPosition(0.62);
 
                     if (gamepad1.right_bumper) {
                         stopperDelayTimer.reset();
@@ -248,8 +248,8 @@ public class TeleOp extends LinearOpMode {
                     BottomFlywheel.setPower(-power1);
 
                     if (gamepad2.right_bumper) {
-                        Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        Stopper1.setPosition(1);
+                        Stopper2.setPosition(1);
                     }
                     if (gamepad1.left_bumper) {
                         state = State.GENERAL_MOVEMENT;
@@ -261,8 +261,8 @@ public class TeleOp extends LinearOpMode {
                     IntakeMotor.setPower(-1);
 
                     if (Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < stopperThreshold) {
-                        Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        Stopper1.setPosition(1);
+                        Stopper2.setPosition(1);
                     }
 
                     break;
