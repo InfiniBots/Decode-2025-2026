@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.Autonomous.PoseStorage;
 import org.firstinspires.ftc.teamcode.subSystem.LimelightTracking;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class TeleOp2 extends LinearOpMode {
     private boolean manual=false;
 
     private boolean isDisabled;
-    private boolean manualStopper;
+
 
 
     enum State {
@@ -143,10 +144,11 @@ public class TeleOp2 extends LinearOpMode {
         follower.startTeleopDrive();
         follower.update();
 
-
-        while (opModeIsActive()) {
-
+        while (opModeIsActive()){
+            PoseStorage.currentPose = follower.getPose();
             follower.update();
+
+
 
             LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
 
@@ -174,8 +176,11 @@ public class TeleOp2 extends LinearOpMode {
                         -gamepad1.left_stick_y,
                         -gamepad1.left_stick_x * 1.1,
                         -gamepad1.right_stick_x,
-                        true
-                );
+                        true);
+                frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             } else {
                 double x = -gamepad1.left_stick_x * 1.1;
@@ -233,20 +238,6 @@ public class TeleOp2 extends LinearOpMode {
                     } else if(manual) {
                         tracker.manualTurret(0);
                     }
-                    if (!manualStopper) {
-                        Stopper1.setPosition(0.62);
-                        Stopper2.setPosition(0.56);
-                    } else if (gamepad2.right_bumper){
-                        Stopper1.setPosition(1);
-                        Stopper2.setPosition(1);
-                        manualStopper = true;
-                    } else if (gamepad2.left_bumper){
-                        Stopper1.setPosition(0);
-                        Stopper2.setPosition(0);
-                        manualStopper = true;
-                    } else if (gamepad2.right_bumper && gamepad2.left_bumper){
-                        manualStopper = false;
-                    }
 
                     if (gamepad1.right_bumper) {
                         stopperDelayTimer.reset();
@@ -275,8 +266,8 @@ public class TeleOp2 extends LinearOpMode {
                     BottomFlywheel.setPower(-power1);
 
                     if (gamepad2.right_bumper) {
-                        Stopper1.setPosition(0.77);
-                        Stopper2.setPosition(0.7);
+                        Stopper1.setPosition(0);
+                        Stopper2.setPosition(0);
                     }
                     if (gamepad1.left_bumper) {
                         state = State.GENERAL_MOVEMENT;
