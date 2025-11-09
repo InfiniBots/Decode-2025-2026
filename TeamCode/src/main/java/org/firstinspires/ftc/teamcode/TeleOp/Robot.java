@@ -15,7 +15,7 @@ public class Robot {
     public Telemetry telemetry;
     public long curTime;
     public String Mode="Driving";
-    public static boolean isRed=false;//if we red or blue
+    public static boolean issRED =false;//if we red or blue
     public int chillShooterSpeed=670;
     public int setTargetSpeed=1500;
     public int ballsLaunched=0;
@@ -27,7 +27,7 @@ public class Robot {
         this.telemetry = telemetry;
         drive = new Drive(op);
         eatingBalls = new eatingBalls(op, telemetry);
-        turretGoPewPewV2 = new turretGoPewPewV2(op,isRed,telemetry);
+        turretGoPewPewV2 = new turretGoPewPewV2(op, issRED,telemetry);
     }
     public void UpdateRobot(){
         curTime=System.currentTimeMillis();

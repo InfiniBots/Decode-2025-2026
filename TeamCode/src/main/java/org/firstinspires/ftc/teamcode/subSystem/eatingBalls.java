@@ -21,10 +21,10 @@ public class eatingBalls {
 
     public static double intakePow=-1;
     public static double outtakePow=1;
-    public static double intakeClosePos1=0.62;
-    public static double intakeOpenPos1=0.77;
-    public static double intakeClosePos2=0.56;
-    public static double intakeOpenPos2=0.7;
+    public static double intakeClosePos1=0.767;
+    public static double intakeOpenPos1=1;
+    public static double intakeClosePos2=0.62;
+    public static double intakeOpenPos2=1;
 
     public eatingBalls(LinearOpMode op, Telemetry telemetry){
         this.telemetry=telemetry;

@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.b_finalShoot;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
+import static org.firstinspires.ftc.teamcode.TeleOp.TeleOp2.isRed;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -16,7 +20,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.subSystem.LimelightTracking;
@@ -26,7 +30,7 @@ import java.util.ArrayList;
 @TeleOp
 @Config
 public class tempTeleop extends LinearOpMode {
-    public boolean isRed=true;
+    public static boolean issRed =isRed;
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
@@ -44,7 +48,7 @@ public class tempTeleop extends LinearOpMode {
     private long lastTime = 0;
     private DcMotorEx TopFlywheel;
     private DcMotorEx BottomFlywheel;
-    public static int ticksPerSecond = 1500;
+    public static int ticksPerSecond = 0;
     public static int stopperThreshold = 80;
     private long currTime;
     private long deltaTime;
@@ -53,7 +57,7 @@ public class tempTeleop extends LinearOpMode {
     public ArrayList<Double> cycles = new ArrayList<>();
     public long cycleTime;
     public double cycleAvg = 0;
-    public static boolean usePedroMode = true;
+    public static boolean usePedroMode = false;
     private Follower follower;
     private boolean prevRightStickButton = false;
 
@@ -68,7 +72,7 @@ public class tempTeleop extends LinearOpMode {
     public void buildPath(){
         park = follower.pathBuilder()
                 .addPath(
-                        new BezierLine(follower.getPose(), (isRed?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
+                        new BezierLine(follower.getPose(), (issRed ?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
                 )
                 .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
                 .build();
@@ -98,6 +102,7 @@ public class tempTeleop extends LinearOpMode {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(isRed?finalShoot:b_finalShoot);
         follower.update();
 
         lltracking = new LimelightTracking(this,telemetry);
@@ -157,40 +162,20 @@ public class tempTeleop extends LinearOpMode {
 
             double expansionCurrentAmps = expansionHub.getCurrent(CurrentUnit.AMPS);
 
-            boolean rsb = gamepad1.right_stick_button;
-            if (rsb && !prevRightStickButton) {
-                usePedroMode = !usePedroMode;
-                if (usePedroMode) {
-                    follower.startTeleopDrive();
-                } else {
-                    follower.setTeleOpDrive(0, 0, 0, true);
-                }
-            }
-            if(gamepad1.x){
+            if(gamepad1.x&&Math.abs(gamepad1.left_stick_x)+Math.abs(gamepad1.right_stick_x)+Math.abs(gamepad1.left_stick_y)==0){
                 if(once) {
                     buildPath();
                     once=false;
                     follower.followPath(park);
                 }
-            }else{
-                once=true;
-            }
-            prevRightStickButton = rsb;
 
-            if (usePedroMode) {
-                follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x * 1.1,
-                        -gamepad1.right_stick_x,
-                        true
-                );
-                if(gamepad1.left_stick_y+gamepad1.left_stick_x+gamepad1.right_stick_x==0){
+            }else if (!gamepad1.x) {
+                once = true;
 
-                }
-            } else {
+
                 double x = -gamepad1.left_stick_x * 1.1;
                 double y = -gamepad1.left_stick_y;
-                double turn = -gamepad1.right_stick_x;
+                double turn = gamepad1.right_stick_x * 0.85;
 
                 double theta = Math.atan2(y, x);
                 double power = Math.hypot(x, y);
@@ -204,49 +189,61 @@ public class tempTeleop extends LinearOpMode {
                 double backLeft = power * sin / max + turn;
                 double backRight = power * cos / max - turn;
 
-                if ((power + Math.abs(turn)) > 0.85) {
+                if ((power + Math.abs(turn)) > 1) {
                     frontLeft /= power + Math.abs(turn);
                     frontRight /= power + Math.abs(turn);
                     backLeft /= power + Math.abs(turn);
                     backRight /= power + Math.abs(turn);
                 }
 
-                frontLeftMotor.setPower(frontLeft * 0.85);
-                backLeftMotor.setPower(backLeft * 0.85);
-                frontRightMotor.setPower(frontRight * 0.85);
-                backRightMotor.setPower(backRight * 0.85);
+                frontLeftMotor.setPower(frontLeft);
+                backLeftMotor.setPower(backLeft);
+                frontRightMotor.setPower(frontRight);
+                backRightMotor.setPower(backRight);
             }
+
             switch (state) {
                 case GENERAL_MOVEMENT:
-                    ticksPerSecond=670;
                     if (gamepad1.left_trigger > 0.1) {
                         IntakeMotor.setPower(1);
                     } else if (gamepad1.right_trigger > 0.1) {
                         IntakeMotor.setPower(-1);
                     } else {
-                        IntakeMotor.setPower(0);
+                        IntakeMotor.setPower(-0.1);
                     }
 
-                    if (gamepad1.dpad_left) {
+                    if (gamepad2.dpad_left) {
                         Turret.setPower(-0.5);
-                    } else if (gamepad1.dpad_right) {
+                    } else if (gamepad2.dpad_right) {
                         Turret.setPower(0.5);
                     } else {
                         Turret.setPower(0);
                     }
-                    Stopper1.setPosition(0.767);
-                    Stopper2.setPosition(0.62);
 
                     if (gamepad1.right_bumper) {
                         state = State.PEW_PEW;
 
                     }
+                    if (gamepad2.x) {
+                        ticksPerSecond = 1500;
+                    }
 
+                    if (gamepad2.dpad_up) {
+                        Stopper1.setPosition(1);
+                        Stopper2.setPosition(1);
+                    } else if (gamepad2.dpad_down) {
+                        Stopper1.setPosition(0);
+                        Stopper1.setPosition(0);
+                    } else {
+                        Stopper1.setPosition(0.767);
+                        Stopper2.setPosition(0.62);
+                    }
 
                     break;
 
                 case PEW_PEW:
-                    ticksPerSecond= lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed():ticksPerSecond;
+                    // ticksPerSecond= lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed():1500;
+                    ticksPerSecond = 1500;
                     if (gamepad2.a) {
                         Stopper1.setPosition(1);
                         Stopper2.setPosition(1);
@@ -256,14 +253,25 @@ public class tempTeleop extends LinearOpMode {
                         double cyc = (currTime - cycleTime) / 1000;
                         cycles.add(cyc);
                         cycleTime = currTime;
+                        ticksPerSecond = 0;
                     }
+
 
                     IntakeMotor.setPower(-1);
 
-                    if (Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < stopperThreshold) {
+                    if (gamepad2.dpad_up) {
                         Stopper1.setPosition(1);
                         Stopper2.setPosition(1);
+                    } else if (gamepad2.dpad_down) {
+                        Stopper1.setPosition(0);
+                        Stopper1.setPosition(0);
+                    } else {
+                        if (Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < stopperThreshold) {
+                            Stopper1.setPosition(1);
+                            Stopper2.setPosition(1);
+                        }
                     }
+
 
                     break;
 
@@ -279,13 +287,9 @@ public class tempTeleop extends LinearOpMode {
             telemetry.addData("Error", ticksPerSecond - TopFlywheel.getVelocity());
             telemetry.addData("Power", TopFlywheel.getPower());
             telemetry.addData("Current of shooter", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("Drive Mode: ", usePedroMode ? "Pedro Pathing" : "Regular Mecanum");
-            telemetry.addData("Pedro Pose: ", follower.getPose());
-            telemetry.addData("Pedro Velocity: ", follower.getVelocity());
             telemetry.addData("Control Hub Current: ", totalCurrentAmps);
             telemetry.addData("Expansion Hub 2: ", expansionCurrentAmps);
             telemetry.addData("intake current", IntakeMotor.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("leftRear", backLeftMotor.getPower());
             telemetry.update();
 
         }

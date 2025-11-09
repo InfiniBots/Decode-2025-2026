@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
-import static org.firstinspires.ftc.teamcode.TeleOp.Robot.isRed;
+import static org.firstinspires.ftc.teamcode.TeleOp.Robot.issRED;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -9,9 +9,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
-import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -22,33 +20,35 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Config
 @Autonomous
 public class redGoalAuto extends LinearOpMode {
-    private boolean issRed=isRed;
+    private boolean issRed= issRED;
     private Robot robot;
     public Follower follower;
     public static boolean openGate=true;
     public String state = "start";
-    private static final Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
-    private static final Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
+    public static final  Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
+    public static final  Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
 
-    private static final Pose ballStack_1 = new Pose(96.000, 83.000, Math.toRadians(0));
-    private static final Pose intakingBalls_1 = new Pose(122.500, 83.000, Math.toRadians(0));
-    private static final Pose openGateControl = new Pose(102, 81, Math.toRadians(0));
+    public static final  Pose ballStack_1 = new Pose(96.000, 85.000, Math.toRadians(0));
+    public static final  Pose intakingBalls_1 = new Pose(122.500, 85.000, Math.toRadians(0));
+    public static final  Pose openGateControl = new Pose(102, 81, Math.toRadians(0));
 
-    private static final Pose intakingBalls_1_openGate = new Pose(131, 75, Math.toRadians(-90));
-    private static final Pose turnOffIntake1 = new Pose(121.00, 81);
-    private static final Pose ballStack_2 = new Pose(96.000, 59.000, Math.toRadians(0));
-    private static final Pose intakingBalls_2 = new Pose(131.000, 59.000, Math.toRadians(0));
-    private static final Pose noTouchGate = new Pose(98,50);
-    private static final Pose turnOffIntake2 = new Pose(120.00, 59);
-    private static final Pose ballStack_3 = new Pose(94.000, 39.000, Math.toRadians(0));
-    private static final Pose intakingBalls_3 = new Pose(131.000, 39.000, Math.toRadians(0));
-    public static final Pose finalShoot = new Pose(94,117, Math.toRadians(-44));
-    private static final Pose finalShootC1 =new Pose(101.5,39.5);
-    private static final Pose finalShootC2 = new Pose(100,106);
-    private static final Pose turnOffIntake3 = new Pose(117, 47);
+    public static final  Pose intakingBalls_1_openGate = new Pose(131, 75, Math.toRadians(-90));
+    public static final Pose turnOffIntake1 = new Pose(121.00, 81);
+    public static final  Pose ballStack_2 = new Pose(96.000, 59.000, Math.toRadians(0));
+    public static final  Pose intakingBalls_2 = new Pose(131.000, 61.000, Math.toRadians(0));
+    public static final  Pose noTouchGate = new Pose(98,50);
+    public static final  Pose turnOffIntake2 = new Pose(120.00, 59);
+    public static final  Pose ballStack_3 = new Pose(94.000, 39.000, Math.toRadians(0));
+    public static final  Pose intakingBalls_3 = new Pose(131.000, 41.000, Math.toRadians(0));
+    public static final Pose finalShoot = new Pose(94,117, Math.toRadians(-63));
+    public static final  Pose finalShootC1 =new Pose(101.5,39.5);
+    public static final  Pose finalShootC2 = new Pose(100,106);
+    public static final  Pose turnOffIntake3 = new Pose(117, 47);
 
 
     public long startShooting;
+    public long oscilDelay;
+    public static int oscilThresh=200;
     public long startGate;
     public static int shootingSpeed=1467;
     public static int chillspeed=670;
@@ -65,7 +65,7 @@ public class redGoalAuto extends LinearOpMode {
     private PathChain toBallStack_3;
     private PathChain combinedIntakePath_3;
     //public static int turrPose=650;
-    public static double maxThresh=0.67;
+    public static double maxThresh=0.8;
 
     public void buildPaths(){
         Preload = follower.pathBuilder()
@@ -223,15 +223,18 @@ public class redGoalAuto extends LinearOpMode {
                     break;
                 case "shootBall_1":
                     if(!follower.isBusy()){
-                        robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
-                            robot.chillShooterSpeed=chillspeed;
-                            robot.Mode = "Driving";
-                            state = "toBallStack_2";
-                            follower.followPath(toBallStack_2);
+                        if(robot.curTime-oscilDelay>=oscilThresh) {
+                            robot.Mode = "shooting";
+                            if (robot.curTime - startShooting >= shootingThreshold || robot.ballsLaunched == 3) {
+                                robot.chillShooterSpeed = chillspeed;
+                                robot.Mode = "Driving";
+                                state = "toBallStack_2";
+                                follower.followPath(toBallStack_2);
+                            }
                         }
                     }else{
                         startShooting = robot.curTime;
+                        oscilDelay = robot.curTime;
                     }
                     break;
                 case "toBallStack_2":
@@ -279,6 +282,8 @@ public class redGoalAuto extends LinearOpMode {
             robot.UpdateRobot();
             follower.update();
             telemetry.addData("ballslaunched",robot.ballsLaunched);
+            telemetry.addData("shooter act speed","");
+            telemetry.addData("shooter speed","");
             telemetry.addData("pose",follower.getPose());
             telemetry.update();
         }

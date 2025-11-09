@@ -69,7 +69,6 @@ public class turretMover extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
             curTime = System.currentTimeMillis();
-            lltracking.updateTurret();
             if(gamepad1.a){
                 Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
-import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.finalShoots;
+import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.b_finalShoot;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
+import static org.firstinspires.ftc.teamcode.TeleOp.Robot.issRED;
+import static org.firstinspires.ftc.teamcode.TeleOp.TeleOp2.isRed;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 @Config
 public class TeleOp extends LinearOpMode {
-        public boolean isRed=true;
+        public boolean issRed = isRed;
         private DcMotor frontLeftMotor;
         private DcMotor frontRightMotor;
         private DcMotor backLeftMotor;
@@ -80,7 +82,7 @@ public class TeleOp extends LinearOpMode {
         public void buildPath(){
             park = follower.pathBuilder()
                     .addPath(
-                            new BezierLine(follower.getPose(), (isRed?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
+                            new BezierLine(follower.getPose(), (issRed ?(new Pose(38.7,33.3)):(new Pose(105.3,33.3))))
                     )
                     .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
                     .build();
@@ -90,7 +92,6 @@ public class TeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(isRed?finalShoot:finalShoots);
         follower.update();
 
         IntakeMotor = hardwareMap.get(DcMotorEx.class, "Intake");
