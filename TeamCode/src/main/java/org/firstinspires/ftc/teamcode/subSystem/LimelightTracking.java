@@ -31,9 +31,9 @@ public class LimelightTracking{
     private long lastTime;
     private long curTime;
     public static double turret_kp = 0.02;
-    public static double turret_ki = 0.00000006;
-    public static double turret_kd = 0.003;
-    public static double turret_kf=0;
+    public static double turret_ki = 0;
+    public static double turret_kd = 0;
+    public static double turret_kf=0.75;
     public static double turret_integral_sum_limit = 1000;
     private double turret_lastError = 0;
     private double turret_errorSum = 0;
@@ -78,7 +78,7 @@ public class LimelightTracking{
             }
         }
         turret_lastError = error;
-        return ((turret_kp * error) + (turret_ki * turret_errorSum) + (turret_kd * errorChange)+(turret_kf*rightx)) * (12.0 / Voltage.getVoltage());
+        return ((turret_kp * error) + (turret_ki * turret_errorSum) + (turret_kd * errorChange)+(turret_kf*rightx));
     }
     public void manualTurret(double manualTurretPower){
         Turret.setPower(manualTurretPower);
@@ -138,7 +138,7 @@ public class LimelightTracking{
             error=-x;
             if (x != 0.00){
                 power = turret_PID(curTime,rightx);
-                if (Turret.getCurrentPosition()>limit&&power>0){
+                if (Turret.getCurrentPosition()>limit){
                     power=0;
                     limiting=true;
                 } else if (Turret.getCurrentPosition()<-limit&&power<0){

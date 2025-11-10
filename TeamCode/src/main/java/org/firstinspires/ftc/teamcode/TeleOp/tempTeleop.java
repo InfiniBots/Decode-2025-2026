@@ -136,7 +136,7 @@ public class tempTeleop extends LinearOpMode {
         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        IntakeMotor.setPower(0);
+        IntakeMotor.setPower(-0.1);
 
         state = State.GENERAL_MOVEMENT;
 
@@ -173,7 +173,7 @@ public class tempTeleop extends LinearOpMode {
                 once = true;
 
 
-                double x = -gamepad1.left_stick_x * 1.1;
+                double x = gamepad1.left_stick_x * 1.1;
                 double y = -gamepad1.left_stick_y;
                 double turn = gamepad1.right_stick_x * 0.85;
 
@@ -209,7 +209,7 @@ public class tempTeleop extends LinearOpMode {
                     } else if (gamepad1.right_trigger > 0.1) {
                         IntakeMotor.setPower(-1);
                     } else {
-                        IntakeMotor.setPower(-0.1);
+                        IntakeMotor.setPower(-0.2);
                     }
 
                     if (gamepad2.dpad_left) {
@@ -227,6 +227,9 @@ public class tempTeleop extends LinearOpMode {
                     if (gamepad2.x) {
                         ticksPerSecond = 1500;
                     }
+                    if(gamepad2.y){
+                        ticksPerSecond = 0;
+                    }
 
                     if (gamepad2.dpad_up) {
                         Stopper1.setPosition(1);
@@ -242,7 +245,7 @@ public class tempTeleop extends LinearOpMode {
                     break;
 
                 case PEW_PEW:
-                    // ticksPerSecond= lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed():1500;
+                    //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = 1500;
                     if (gamepad2.a) {
                         Stopper1.setPosition(1);

@@ -41,7 +41,7 @@ public class eatingBalls {
         intake.setPower(outtakePow);
     }
     public void chilling(){//intake not moving
-        intake.setPower(0);
+        intake.setPower(-0.1);
     }
     public void intakeClose(){//stop intaken balls going into shooter
         intakeStop1.setPosition(intakeClosePos1);
