@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.b_finalShoot;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
+import static org.firstinspires.ftc.teamcode.TeleOp.Cast_Ration.isRed;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -28,7 +30,7 @@ import java.util.ArrayList;
 @Config
 public class TeleOp2 extends LinearOpMode {
 
-    public static boolean isRed = true;
+    public static boolean isRedd = isRed;
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
@@ -86,7 +88,7 @@ public class TeleOp2 extends LinearOpMode {
     public void buildPath(){
         park = follower.pathBuilder()
                 .addPath(
-                        new BezierLine(follower.getPose(), (!isRed?(new Pose(38.7,33.3)):(new Pose(104.3,34.3))))
+                        new BezierLine(follower.getPose(), (!isRedd?(new Pose(38.7,33.3)):(new Pose(104.3,34.3))))
                 )
                 .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
                 .build();

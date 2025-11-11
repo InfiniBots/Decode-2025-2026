@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.TeleOp.Cast_Ration.isRed;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -15,7 +17,7 @@ public class Robot {
     public Telemetry telemetry;
     public long curTime;
     public String Mode="Driving";
-    public static boolean issRED =false;//if we red or blue
+    public static boolean issRED =isRed;//if we red or blue
     public int chillShooterSpeed=670;
     public int setTargetSpeed=1500;
     public int ballsLaunched=0;

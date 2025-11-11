@@ -15,7 +15,7 @@ public class turretGoPewPewV2 {
     private DcMotorEx Turret;
     private DcMotorEx TurrMotor;
     private DcMotorEx TurrMotor2;
-    private VoltageSensor Voltage;
+    public VoltageSensor Voltage;
     private Limelight3A limelight;
 
     private Servo shotAngler;

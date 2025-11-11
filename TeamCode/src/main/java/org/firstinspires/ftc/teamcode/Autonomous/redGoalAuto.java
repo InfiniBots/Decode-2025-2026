@@ -35,7 +35,7 @@ public class redGoalAuto extends LinearOpMode {
     public static final  Pose intakingBalls_1_openGate = new Pose(131, 75, Math.toRadians(-90));
     public static final Pose turnOffIntake1 = new Pose(121.00, 81);
     public static final  Pose ballStack_2 = new Pose(96.000, 59.000, Math.toRadians(0));
-    public static final  Pose intakingBalls_2 = new Pose(131.000, 61.000, Math.toRadians(0));
+    public static final  Pose intakingBalls_2 = new Pose(134.000, 61.000, Math.toRadians(0));
     public static final  Pose noTouchGate = new Pose(98,50);
     public static final  Pose turnOffIntake2 = new Pose(120.00, 59);
     public static final  Pose ballStack_3 = new Pose(94.000, 39.000, Math.toRadians(0));
@@ -50,7 +50,7 @@ public class redGoalAuto extends LinearOpMode {
     public long oscilDelay;
     public static int oscilThresh=200;
     public long startGate;
-    public static int shootingSpeed=1467;
+    public int shootingSpeed;
     public static int chillspeed=670;
     public long startIntaking;
     public static int intakingThreshold=670;
@@ -153,25 +153,7 @@ public class redGoalAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry=new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         robot=new Robot(this,telemetry);
-        /*if(!issRed){
-            start=start.mirror();
-            shooting=shooting.mirror();
-            ballStack_1=ballStack_1.mirror();
-            ballStack_2=ballStack_2.mirror();
-            ballStack_3=ballStack_3.mirror();
-            intakingBalls_1=intakingBalls_1.mirror();
-            intakingBalls_2=intakingBalls_2.mirror();
-            intakingBalls_3=intakingBalls_3.mirror();
-            noTouchGate=noTouchGate.mirror();
-            intakingBalls_1_openGate=intakingBalls_1_openGate.mirror();
-            openGateControl=openGateControl.mirror();
-            turnOffIntake1=turnOffIntake1.mirror();
-            turnOffIntake2=turnOffIntake2.mirror();
-            turnOffIntake3=turnOffIntake3.mirror();
-            finalShoot=finalShoot.mirror();
-            finalShootC1=finalShootC1.mirror();
-            finalShootC2=finalShootC2.mirror();
-        }*/
+        shootingSpeed=robot.turretGoPewPewV2.Voltage.getVoltage()>14.0?1450 :1467;
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(start);
         buildPaths();
@@ -268,14 +250,17 @@ public class redGoalAuto extends LinearOpMode {
                     break;
                 case "comboIntake3":
                     if(!follower.isBusy()){
-                        robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
-                            robot.chillShooterSpeed=chillspeed;
-                            robot.Mode = "Driving";
-                            robot.chillShooterSpeed=0;
+                        if(robot.curTime-oscilDelay>=oscilThresh) {
+                            robot.Mode = "shooting";
+                            if (robot.curTime - startShooting >= shootingThreshold || robot.ballsLaunched == 3) {
+                                robot.chillShooterSpeed = chillspeed;
+                                robot.Mode = "Driving";
+                                robot.chillShooterSpeed = 0;
+                            }
                         }
                     }else{
                         startShooting = robot.curTime;
+                        oscilDelay=robot.curTime;
                     }
                     break;
             }

@@ -30,7 +30,7 @@ public class eatingBalls {
         this.telemetry=telemetry;
         intake = op.hardwareMap.get(DcMotorEx.class,"Intake");
         intakeStop1 = op.hardwareMap.get(Servo.class,"Stopper1");
-        intakeStop2 = op.hardwareMap.get(Servo.class,"Stopper2");
+       // intakeStop2 = op.hardwareMap.get(Servo.class,"Stopper2");
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
@@ -45,10 +45,10 @@ public class eatingBalls {
     }
     public void intakeClose(){//stop intaken balls going into shooter
         intakeStop1.setPosition(intakeClosePos1);
-        intakeStop2.setPosition(intakeClosePos2);
+       // intakeStop2.setPosition(intakeClosePos2);
     }
     public void intakeOpen(){//allow intaken balls going into shooter
         intakeStop1.setPosition(intakeOpenPos1);
-        intakeStop2.setPosition(intakeOpenPos2);
+       //Sop intakeStop2.setPosition(intakeOpenPos2);
     }
 }
