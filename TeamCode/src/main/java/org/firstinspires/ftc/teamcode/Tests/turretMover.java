@@ -27,9 +27,9 @@ public class turretMover extends LinearOpMode {
     private long lastTime;
     public static boolean turrOn=false;
 
-    public static double turret_kp = 0.02;
-    public static double turret_ki = 0.00000006;
-    public static double turret_kd = 0.003;
+    public static double turret_kp = 0;
+    public static double turret_ki = 0;
+    public static double turret_kd = 0;
     private double turret_lastError = 0;
     private double power;
 

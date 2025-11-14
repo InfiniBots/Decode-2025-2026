@@ -26,7 +26,7 @@ public class LimelightTracking{
     private VoltageSensor Voltage;
     private double targetPosition = 0;
     private boolean isntGettingRecognized = false;
-    private Limelight3A limelight;
+    public Limelight3A limelight;
     private long lastTime;
     private long curTime;
     public static double turret_kp = 0.002;
@@ -130,12 +130,12 @@ public class LimelightTracking{
             } else {
                 limiting = false;
             }
-            Turret.setPower(0);
+            // Turret.setPower(0);
         } else {
             lockeddelay=curTime;
             isntGettingRecognized=false;
             x = result.getTx();
-            error=x*((double) 2288 /360);
+            error=x*((double) 2288 /360)+67;
             power = turret_PID(curTime,rightx);
             if (Turret.getCurrentPosition()>=limit&&power>0){
                 power=0;
