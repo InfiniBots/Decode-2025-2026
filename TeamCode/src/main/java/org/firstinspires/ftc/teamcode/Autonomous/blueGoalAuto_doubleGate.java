@@ -1,5 +1,19 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.ballStack_1;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.ballStack_2;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.finalShootC1;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.finalShootC2;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.intakingBalls_1;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.intakingBalls_2;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.intakingBalls_3;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.noTouchGate;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.openGate1Control;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.openGate2Control;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.start;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.turnOffIntake1;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.turnOffIntake2;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.turnOffIntake3;
 import static org.firstinspires.ftc.teamcode.TeleOp.Robot.issRED;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -19,47 +33,48 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Config
 @Autonomous
-public class redGoalAuto extends LinearOpMode {
+public class blueGoalAuto_doubleGate extends LinearOpMode {
     private boolean issRed= issRED;
     private Robot robot;
     public Follower follower;
-    public static boolean openGate=true;
     public String state = "start";
-    public static final  Pose start = new Pose(110.000, 135.500, Math.toRadians(0));
-    public static final  Pose shooting = new Pose(107.000, 106.000, Math.toRadians(-45));
+    public static final  Pose b_start = start.mirror();
+    public static final  Pose b_shooting = new Pose(38, 108.000, Math.toRadians(-135));
 
-    public static final  Pose ballStack_1 = new Pose(96.000, 85.000, Math.toRadians(0));
-    public static final  Pose intakingBalls_1 = new Pose(122.500, 85.000, Math.toRadians(0));
-    public static final  Pose openGate1Control = new Pose(102, 81, Math.toRadians(0));
+    public static final  Pose b_ballStack_1 = ballStack_1.mirror();
+    public static final  Pose b_intakingBalls_1 = intakingBalls_1.mirror();
+    public static final  Pose b_openGate1Control =  openGate1Control.mirror();
 
+    public static final  Pose b_intakingBalls_1_openGate = new Pose(13, 79, Math.toRadians(90));
+    public static final  Pose b_turnOffIntake1 = turnOffIntake1.mirror();
+    public static final  Pose b_ballStack_2 = ballStack_2.mirror();
+    public static final  Pose b_intakingBalls_2 = intakingBalls_2.mirror();
+    public static final  Pose b_openGate2Control = new Pose(25, 63, Math.toRadians(0));
+    public static final  Pose b_intakingBalls_2_openGate =  new Pose(13, 74, Math.toRadians(-90));
+    public static final  Pose b_turnOffIntake2 = turnOffIntake2.mirror();
+    public static final  Pose b_ballStack_3 =  new Pose(49, 38.000, Math.toRadians(180));
+    public static final  Pose b_intakingBalls_3 = intakingBalls_3.mirror();
+    public static final Pose b_finalShoot = new Pose(53,120, Math.toRadians(63));
+    public static final  Pose b_finalShootC1 =finalShootC1.mirror();
+    public static final  Pose b_finalShootC2 = finalShootC2.mirror();
+    public static final  Pose b_turnOffIntake3 = turnOffIntake3.mirror();
 
-    public static final  Pose intakingBalls_1_openGate = new Pose(131, 75, Math.toRadians(-90));
-    public static final Pose turnOffIntake1 = new Pose(121.00, 81);
-    public static final  Pose ballStack_2 = new Pose(96.000, 59.000, Math.toRadians(0));
-    public static final  Pose intakingBalls_2 = new Pose(134.000, 61.000, Math.toRadians(0));
-    public static final  Pose noTouchGate = new Pose(98,50);
-    public static final  Pose turnOffIntake2 = new Pose(120.00, 59);
-    public static final  Pose ballStack_3 = new Pose(94.000, 39.000, Math.toRadians(0));
-    public static final  Pose intakingBalls_3 = new Pose(131.000, 41.000, Math.toRadians(0));
-    public static final Pose finalShoot = new Pose(94,117, Math.toRadians(-72));
-    public static final  Pose finalShootC1 =new Pose(101.5,39.5);
-    public static final  Pose finalShootC2 = new Pose(98,105);
-    public static final  Pose turnOffIntake3 = new Pose(117, 47);
 
 
     public long startShooting;
     public long oscilDelay;
     public static int oscilThresh=200;
     public long startGate;
-    public int shootingSpeed;
+    public static int shootingSpeed=1450;
     public static int chillspeed=670;
     public long startIntaking;
     public static int intakingThreshold=670;
-    public static int shootingThreshold=2900;
+    public static int shootingThreshold=2700;
     public static int holdGateThreshold=1500;
     private PathChain Preload;
     private PathChain toBallStack_1;
     private PathChain combinedIntakePath_1;
+    private PathChain shootBall_2;
     private PathChain shootBall_1;
     private PathChain toBallStack_2;
     private PathChain combinedIntakePath_2;
@@ -71,79 +86,85 @@ public class redGoalAuto extends LinearOpMode {
     public void buildPaths(){
         Preload = follower.pathBuilder()
                 .addPath(
-                        new BezierLine(start, shooting)
+                        new BezierLine(b_start, b_shooting)
                 )
-                .setLinearHeadingInterpolation(start.getHeading(), shooting.getHeading())
+                .setLinearHeadingInterpolation(b_start.getHeading(), b_shooting.getHeading())
                 .build();
         toBallStack_1 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(shooting, ballStack_1)
+                        new BezierLine(b_shooting, b_ballStack_1)
                 )
-                .setLinearHeadingInterpolation(shooting.getHeading(), ballStack_1.getHeading())
+                .setLinearHeadingInterpolation(b_shooting.getHeading(), b_ballStack_1.getHeading())
                 .build();
 
         combinedIntakePath_1 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(ballStack_1, intakingBalls_1)
+                        new BezierLine(b_ballStack_1, b_intakingBalls_1)
                 )
-                .setConstantHeadingInterpolation(intakingBalls_1.getHeading())
+                .setConstantHeadingInterpolation(b_intakingBalls_1.getHeading())
                 .addPath(
-                        new BezierCurve(intakingBalls_1, openGate1Control,intakingBalls_1_openGate)
+                        new BezierCurve(b_intakingBalls_1, b_openGate1Control, b_intakingBalls_1_openGate)
                 )
-                .setLinearHeadingInterpolation(intakingBalls_1.getHeading(),intakingBalls_1_openGate.getHeading())
-                .addPoseCallback(turnOffIntake1, () -> {
+                .setLinearHeadingInterpolation(b_intakingBalls_1.getHeading(), b_intakingBalls_1_openGate.getHeading())
+                .addPoseCallback(b_turnOffIntake1, () -> {
                     robot.intakingApproval = false;
                 }, 0.7)
                 .build();
 
         shootBall_1 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(intakingBalls_1, shooting)
+                        new BezierLine(b_intakingBalls_1, b_shooting)
                 )
-                .setLinearHeadingInterpolation(intakingBalls_1.getHeading(), shooting.getHeading())
+                .setLinearHeadingInterpolation(b_intakingBalls_1.getHeading(), b_shooting.getHeading())
                 .build();
 
         toBallStack_2 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(shooting, ballStack_2)
+                        new BezierLine(b_shooting, b_ballStack_2)
                 )
-                .setLinearHeadingInterpolation(shooting.getHeading(), ballStack_2.getHeading())
+                .setLinearHeadingInterpolation(b_shooting.getHeading(), b_ballStack_2.getHeading())
                 .build();
 
         combinedIntakePath_2 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(ballStack_2, intakingBalls_2)
+                        new BezierLine(b_ballStack_2, b_intakingBalls_2)
                 )
-                .setConstantHeadingInterpolation(intakingBalls_2.getHeading())
+                .setConstantHeadingInterpolation(b_intakingBalls_2.getHeading())
                 .addPath(
-                        new BezierCurve(intakingBalls_2,noTouchGate, shooting)
+                        new BezierCurve(b_intakingBalls_2,b_openGate2Control,b_intakingBalls_2_openGate)
                 )
-                .setLinearHeadingInterpolation(intakingBalls_2.getHeading(), shooting.getHeading())
-                .addPoseCallback(turnOffIntake2,()->{
+                .setLinearHeadingInterpolation(b_intakingBalls_2.getHeading(), b_intakingBalls_2_openGate.getHeading())
+                .addPoseCallback(b_turnOffIntake2,()->{
                     robot.intakingApproval=false;
                     robot.chillShooterSpeed=shootingSpeed;
                     follower.setMaxPower(1);
                 },0.6)
                 .build();
+        shootBall_2 = follower.pathBuilder()
+                .addPath(
+                        new BezierLine(b_intakingBalls_2_openGate,b_shooting)
+                )
+                .setLinearHeadingInterpolation(b_intakingBalls_2_openGate.getHeading(),b_shooting.getHeading())
+                .build();
 
         toBallStack_3 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(shooting, ballStack_3)
+                        new BezierLine(b_shooting, b_ballStack_3)
                 )
-                .setLinearHeadingInterpolation(shooting.getHeading(), ballStack_3.getHeading())
+                .setLinearHeadingInterpolation(b_shooting.getHeading(), b_ballStack_3.getHeading())
                 .build();
 
         combinedIntakePath_3 =  follower.pathBuilder()
                 .addPath(
-                        new BezierLine(ballStack_3, intakingBalls_3)
+                        new BezierLine(b_ballStack_3, b_intakingBalls_3)
                 )
-                .setConstantHeadingInterpolation(intakingBalls_3.getHeading())
+                .setConstantHeadingInterpolation(b_intakingBalls_3.getHeading())
                 .addPath(
-                        new BezierCurve(intakingBalls_3,finalShootC1,finalShootC2 ,finalShoot)
+                        new BezierCurve(b_intakingBalls_3, b_finalShootC1, b_finalShootC2, b_finalShoot)
                 )
                 .setTangentHeadingInterpolation()
                 .setReversed()
-                .addPoseCallback(turnOffIntake3,()->{
+                .addPoseCallback(b_turnOffIntake3,()->{
                     robot.intakingApproval=false;
                     robot.chillShooterSpeed=shootingSpeed+40;
                     follower.setMaxPower(1);
@@ -156,7 +177,7 @@ public class redGoalAuto extends LinearOpMode {
         robot=new Robot(this,telemetry);
         shootingSpeed=robot.turretGoPewPewV2.Voltage.getVoltage()>14.0?1450 :1467;
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(start);
+        follower.setStartingPose(b_start);
         buildPaths();
         robot.Mode = "Driving";
         waitForStart();
@@ -228,6 +249,18 @@ public class redGoalAuto extends LinearOpMode {
                     }
                     break;
                 case "comboIntake2":
+                    if(!follower.isBusy()) {
+                        if(robot.curTime-startGate>=holdGateThreshold-1000) {
+                            robot.chillShooterSpeed = shootingSpeed;
+                            state = "shootBall_2";
+                            follower.followPath(shootBall_2);
+                            follower.setMaxPower(1);
+                        }
+                    }else{
+                        startGate = robot.curTime;
+                    }
+                    break;
+                case "shootBall_2":
                     if(!follower.isBusy()){
                         robot.Mode = "shooting";
                         if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){

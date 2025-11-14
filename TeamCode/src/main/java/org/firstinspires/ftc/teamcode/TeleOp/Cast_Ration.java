@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.b_finalShoot;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -64,8 +67,12 @@ public class Cast_Ration extends LinearOpMode {
     public double distanceToRedGoal;
     public int custom_tp;
     public boolean equationDisabled;
+    public double Sensitivity;
+    public static double gSensitivity=0.85;
+    public static double pSensitivity=0.67;
 
     private boolean prevRightStickButton = false;
+    public static boolean continueing=false;
     Pose currentPos = new Pose( 80.000, 80, Math.toRadians(-90));
 
 
@@ -82,6 +89,8 @@ public class Cast_Ration extends LinearOpMode {
     public boolean once=true;
     public boolean turrToggle=true;
     public boolean turretOnOff =true;
+    public boolean PewPewActive=false;
+    public static double chillSpeed=-0.2;
     /*public PathChain park;
     public void buildPath(){
         park = follower.pathBuilder()
@@ -130,7 +139,8 @@ public class Cast_Ration extends LinearOpMode {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(new Pose(80,80,Math.toRadians(-90)));
+        follower.setPose(isRed?finalShoot:b_finalShoot);
+        //follower.setPose(new Pose(80,80,Math.toRadians(-90)));t
         follower.update();
 
 
@@ -215,7 +225,7 @@ public class Cast_Ration extends LinearOpMode {
 
                 double x = gamepad1.left_stick_x * 1.1;
                 double y = -gamepad1.left_stick_y;
-                double turn = gamepad1.right_stick_x * 0.85;
+                double turn = gamepad1.right_stick_x * Sensitivity;
 
                 double theta = Math.atan2(y, x);
                 double power = Math.hypot(x, y);
@@ -240,19 +250,23 @@ public class Cast_Ration extends LinearOpMode {
                 backLeftMotor.setPower(backLeft);
                 frontRightMotor.setPower(frontRight);
                 backRightMotor.setPower(backRight);
+                if(gamepad2.y){
+                    follower.setPose(isRed?new Pose(24,1):new Pose(152,13));
+                }
 
 
             switch (state) {
                 case GENERAL_MOVEMENT:
+                    Sensitivity=gSensitivity;
+                    PewPewActive=false;
                     custom_tp = 0;
                     ticksPerSecond = 0;
-
                     if (gamepad1.left_trigger > 0.1) {
                         IntakeMotor.setPower(1);
                     } else if (gamepad1.right_trigger > 0.1) {
                         IntakeMotor.setPower(-1);
                     } else {
-                        IntakeMotor.setPower(-0.2);
+                        IntakeMotor.setPower(chillSpeed);
                     }
                     lltracking.turrReset();
                     /*if(gamepad1.a&&turrToggle){
@@ -283,14 +297,10 @@ public class Cast_Ration extends LinearOpMode {
 
                     if (gamepad1.right_bumper) {
                         state = State.PEW_PEW;
-
+                        PewPewActive=false;
+                        continueing=true;
                     }
 
-                    if (gamepad2.x) {
-                        ticksPerSecond = 1500;
-                    }else{
-                    ticksPerSecond=0;
-                    }
 
                     if (gamepad2.dpad_up) {
                         Stopper1.setPosition(1);
@@ -306,6 +316,7 @@ public class Cast_Ration extends LinearOpMode {
                     break;
 
                 case PEW_PEW:
+                    Sensitivity=0.79;
                     custom_tp = (int)(283.2006 + (65.59412 * distanceToRedGoal) - (1.299762 * Math.pow(distanceToRedGoal,2)) + (0.01202799 * Math.pow(distanceToRedGoal, 3)) - (0.00003992315 * Math.pow(distanceToRedGoal, 4)));
                     if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
@@ -315,15 +326,25 @@ public class Cast_Ration extends LinearOpMode {
                        // Stopper2.setPosition(1);
                     }
                     if (gamepad1.left_bumper) {
-                        state = State.GENERAL_MOVEMENT;
                         double cyc = (currTime - cycleTime) / 1000;
                         cycles.add(cyc);
                         cycleTime = currTime;
                         ticksPerSecond = 0;
+                        PewPewActive=false;
+                        state = State.GENERAL_MOVEMENT;
+                    }
+                    if(gamepad1.right_bumper&&!continueing) {
+                        PewPewActive = true;
+                        Sensitivity=pSensitivity;
+                    }else if(!gamepad1.right_bumper){
+                        continueing=false;
                     }
 
-
-                    IntakeMotor.setPower(-1);
+                    if(PewPewActive) {
+                        IntakeMotor.setPower(-1);
+                    }else{
+                        IntakeMotor.setPower(-0.2);
+                    }
 
                     if (gamepad2.dpad_up) {
                         Stopper1.setPosition(1);
@@ -332,13 +353,18 @@ public class Cast_Ration extends LinearOpMode {
                         Stopper1.setPosition(0);
                        // Stopper2.setPosition(0);
                     } else {
-                        if (Math.abs(TopFlywheel.getVelocity() - custom_tp) < stopperThreshold) {
-                            Stopper1.setPosition(1);
-                           // Stopper2.setPosition(1);
+                        if(!equationDisabled) {
+                            if (PewPewActive && Math.abs(TopFlywheel.getVelocity() - custom_tp) < stopperThreshold) {
+                                Stopper1.setPosition(1);
+                                // Stopper2.setPosition(1);
+                            }
+                        }else{
+                            if (PewPewActive&&(Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < stopperThreshold)) {
+                                Stopper1.setPosition(1);
+                                // Stopper2.setPosition(1);
+                            }
                         }
                     }
-
-
                     break;
 
 
@@ -362,7 +388,8 @@ public class Cast_Ration extends LinearOpMode {
             telemetry.addData("Pipeline: ", lltracking.limelight.getStatus().getPipelineIndex());
             telemetry.addData("EquationDisabled: ", equationDisabled);
             telemetry.addData("Gamepad 2 B: ", gamepad2.b);
-
+telemetry.addData("left stick x val",gamepad1.left_stick_x);
+telemetry.addData("rearleft dt val",backLeftMotor.getPower());
             telemetry.update();
 
         }

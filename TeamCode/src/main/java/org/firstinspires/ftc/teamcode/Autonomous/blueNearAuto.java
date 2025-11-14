@@ -2,17 +2,13 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.ballStack_1;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.ballStack_2;
-import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.ballStack_3;
-import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShootC1;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShootC2;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.intakingBalls_1;
-import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.intakingBalls_1_openGate;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.intakingBalls_2;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.intakingBalls_3;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.noTouchGate;
-import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.openGateControl;
-import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.shooting;
+import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.openGate1Control;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.start;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.turnOffIntake1;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.turnOffIntake2;
@@ -47,7 +43,7 @@ public class blueNearAuto extends LinearOpMode {
 
     public static final  Pose b_ballStack_1 = ballStack_1.mirror();
     public static final  Pose b_intakingBalls_1 = intakingBalls_1.mirror();
-    public static final  Pose b_openGateControl =  openGateControl.mirror();
+    public static final  Pose b_openGateControl =  openGate1Control.mirror();
 
     public static final  Pose b_intakingBalls_1_openGate = new Pose(13, 79, Math.toRadians(90));
     public static final  Pose b_turnOffIntake1 = turnOffIntake1.mirror();
@@ -55,7 +51,7 @@ public class blueNearAuto extends LinearOpMode {
     public static final  Pose b_intakingBalls_2 = intakingBalls_2.mirror();
     public static final  Pose b_noTouchGate = noTouchGate.mirror();
     public static final  Pose b_turnOffIntake2 = turnOffIntake2.mirror();
-    public static final  Pose b_ballStack_3 = ballStack_3.mirror();
+    public static final  Pose b_ballStack_3 =  new Pose(49, 38.000, Math.toRadians(180));
     public static final  Pose b_intakingBalls_3 = intakingBalls_3.mirror();
     public static final Pose b_finalShoot = new Pose(53,120, Math.toRadians(63));
     public static final  Pose b_finalShootC1 =finalShootC1.mirror();
@@ -72,7 +68,7 @@ public class blueNearAuto extends LinearOpMode {
     public static int chillspeed=670;
     public long startIntaking;
     public static int intakingThreshold=670;
-    public static int shootingThreshold=3000;
+    public static int shootingThreshold=2900;
     public static int holdGateThreshold=1500;
     private PathChain Preload;
     private PathChain toBallStack_1;
@@ -171,30 +167,11 @@ public class blueNearAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry=new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         robot=new Robot(this,telemetry);
-        /*if(!issRed){
-            start=start.mirror();
-            shooting=shooting.mirror();
-            ballStack_1=ballStack_1.mirror();
-            ballStack_2=ballStack_2.mirror();
-            ballStack_3=ballStack_3.mirror();
-            intakingBalls_1=intakingBalls_1.mirror();
-            intakingBalls_2=intakingBalls_2.mirror();
-            intakingBalls_3=intakingBalls_3.mirror();
-            noTouchGate=noTouchGate.mirror();
-            intakingBalls_1_openGate=intakingBalls_1_openGate.mirror();
-            openGateControl=openGateControl.mirror();
-            turnOffIntake1=turnOffIntake1.mirror();
-            turnOffIntake2=turnOffIntake2.mirror();
-            turnOffIntake3=turnOffIntake3.mirror();
-            finalShoot=finalShoot.mirror();
-            finalShootC1=finalShootC1.mirror();
-            finalShootC2=finalShootC2.mirror();
-        }*/
+        shootingSpeed=robot.turretGoPewPewV2.Voltage.getVoltage()>14.0?1450 :1467;
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(b_start);
         buildPaths();
         robot.Mode = "Driving";
-        // robot.turretGoPewPewV2.turretSetPose(turrPose);
         waitForStart();
         while (opModeIsActive()){
             follower.update();
@@ -286,14 +263,17 @@ public class blueNearAuto extends LinearOpMode {
                     break;
                 case "comboIntake3":
                     if(!follower.isBusy()){
-                        robot.Mode = "shooting";
-                        if(robot.curTime-startShooting>=shootingThreshold||robot.ballsLaunched==3){
-                            robot.chillShooterSpeed=chillspeed;
-                            robot.Mode = "Driving";
-                            robot.chillShooterSpeed=0;
+                        if(robot.curTime-oscilDelay>=oscilThresh) {
+                            robot.Mode = "shooting";
+                            if (robot.curTime - startShooting >= shootingThreshold || robot.ballsLaunched == 3) {
+                                robot.chillShooterSpeed = chillspeed;
+                                robot.Mode = "Driving";
+                                robot.chillShooterSpeed = 0;
+                            }
                         }
                     }else{
                         startShooting = robot.curTime;
+                        oscilDelay = robot.curTime;
                     }
                     break;
             }

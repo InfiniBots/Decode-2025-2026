@@ -29,10 +29,11 @@ public class LimelightTracking{
     public Limelight3A limelight;
     private long lastTime;
     private long curTime;
-    public static double turret_kp = 0.002;
-    public static double turret_ki = 0.0001;
+    public static double turret_kp = 0.003;
+    public static double turret_ki = 0;
     public static double turret_kd = 0;
     public static double turret_kf=0.7;
+    public static double friction=0.12;
     public static double turret_integral_sum_limit = 1000;
     private double turret_lastError = 0;
     private double turret_errorSum = 0;
@@ -45,13 +46,13 @@ public class LimelightTracking{
     public boolean limiting=false;
     public double power=0;
     public double x=0;
-    public double conversionRate = (360/2288);//ang per tick
+    public double conversionRate = (2288.0/360.0);//tick per ang
     public int llostThres=1000;
     public long lockeddelay;
     public double distance=1;
     Telemetry telemetry;
-    private double goalPosx= isRed ?131:11;
-    private double goalPosy=136;
+    private double goalPosx= isRed ?135:9;
+    private double goalPosy=135;
     public LimelightTracking(LinearOpMode op, Telemetry telemetry){
         this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         Turret = op.hardwareMap.get(DcMotorEx.class, "Turret");
@@ -60,7 +61,11 @@ public class LimelightTracking{
         lastTime = System.currentTimeMillis();
         limelight = op.hardwareMap.get(Limelight3A.class, "limelight");
         Voltage = op.hardwareMap.voltageSensor.iterator().next();
-        limelight.pipelineSwitch(1);
+        if(isRed) {
+            limelight.pipelineSwitch(1);
+        }else{
+            limelight.pipelineSwitch(2);
+        }
         limelight.start();
     }
 
@@ -79,7 +84,9 @@ public class LimelightTracking{
             }
         }
         turret_lastError = error;
-        return ((turret_kp * error) + (turret_ki * turret_errorSum) + (turret_kd * errorChange)+(turret_kf*rightx));
+        double power=((turret_kp * error) + (turret_ki * turret_errorSum) + (turret_kd * errorChange)+(turret_kf*rightx));
+        if(!(Math.abs(error)<6.7))power+=power>0?friction:-friction;
+        return power;
     }
     public void manualTurret(double manualTurretPower){
         Turret.setPower(manualTurretPower);
@@ -106,17 +113,29 @@ public class LimelightTracking{
         telemetry.addData("botHeading",botHeading);
 
         if (result == null || !result.isValid()){
-              /*  isntGettingRecognized = true;
+            isntGettingRecognized = true;
+              /*
                 double xLength = (goalPosx - botXPos);//we know the goals are at the very most right or left so we subtract botx from goal to get our xlenght. we dont have absolute val to keep direction
                 double yLength = (goalPosy - botYpos);
                 double rawturrAngle = Math.toDegrees(Math.atan2(yLength, xLength));
                 telemetry.addData("raw ang", rawturrAngle);
                 double turrAngle = (rawturrAngle - botHeading);
+                while (turrAngle > 180) {
+                    turrAngle -= 360;
+                }
+                while (turrAngle < -180) {
+                    turrAngle += 360;
+                }
                 x = Math.round(turrAngle);//x here is the angle neeeded relative tothe bot
                 double turrCurPos = Turret.getCurrentPosition();
-                x = x - turrCurPos;
+                x = x*conversionRate - turrCurPos;
                 telemetry.addData("turrAngle", turrAngle);
                 telemetry.addData("ideal turrPos", x);
+                if(x>limit){
+                    x=limit;
+                }else if(x<-limit){
+                    x=-limit;
+                }
                 error = x;
                 power = turret_PID(curTime,rightx);*/
 
@@ -130,12 +149,12 @@ public class LimelightTracking{
             } else {
                 limiting = false;
             }
-            // Turret.setPower(0);
+            Turret.setPower(0);
         } else {
             lockeddelay=curTime;
             isntGettingRecognized=false;
             x = result.getTx();
-            error=x*((double) 2288 /360)+67;
+            error=(x*((double) 2288 /360));
             power = turret_PID(curTime,rightx);
             if (Turret.getCurrentPosition()>=limit&&power>0){
                 power=0;
