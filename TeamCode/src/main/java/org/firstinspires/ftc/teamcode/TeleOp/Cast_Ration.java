@@ -70,7 +70,7 @@ public class Cast_Ration extends LinearOpMode {
     public double Sensitivity;
     public static double gSensitivity=0.85;
     public static double pSensitivity=0.67;
-
+    private boolean lastBack = false;
     private boolean prevRightStickButton = false;
     public static boolean continueing=false;
     Pose currentPos = new Pose( 80.000, 80, Math.toRadians(-90));
@@ -182,13 +182,12 @@ public class Cast_Ration extends LinearOpMode {
         state = State.GENERAL_MOVEMENT;
 
 
-
+        telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
+        telemetry.update();
         waitForStart();
         lastTime = System.currentTimeMillis();
         cycleTime = System.currentTimeMillis();
-        follower.startTeleopDrive();
         follower.update();
-
 
         while (opModeIsActive()) {
             currTime = System.currentTimeMillis();
@@ -254,6 +253,10 @@ public class Cast_Ration extends LinearOpMode {
                     follower.setPose(isRed?new Pose(24,1):new Pose(152,13));
                 }
 
+                if (gamepad2.back && !lastBack) {
+                    isRed = !isRed;
+                }
+                lastBack = gamepad2.back;
 
             switch (state) {
                 case GENERAL_MOVEMENT:
@@ -382,14 +385,15 @@ public class Cast_Ration extends LinearOpMode {
             telemetry.addData("Control Hub Current: ", totalCurrentAmps);
             telemetry.addData("Expansion Hub 2: ", expansionCurrentAmps);
             telemetry.addData("intake current", IntakeMotor.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
             telemetry.addData("Position of Robot X: ", xRobot);
             telemetry.addData("Position of Robot Y: ", yRobot);
             telemetry.addData("Distance to Red Goal: ", distanceToRedGoal);
             telemetry.addData("Pipeline: ", lltracking.limelight.getStatus().getPipelineIndex());
             telemetry.addData("EquationDisabled: ", equationDisabled);
             telemetry.addData("Gamepad 2 B: ", gamepad2.b);
-telemetry.addData("left stick x val",gamepad1.left_stick_x);
-telemetry.addData("rearleft dt val",backLeftMotor.getPower());
+            telemetry.addData("left stick x val",gamepad1.left_stick_x);
+            telemetry.addData("rearleft dt val",backLeftMotor.getPower());
             telemetry.update();
 
         }
