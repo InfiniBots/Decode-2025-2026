@@ -65,11 +65,7 @@ public class LimelightTracking{
     }
 
     public double turret_PID(long curtime,double rightx) {
-        if(isRed) {
-            limelight.pipelineSwitch(1);
-        }else{
-            limelight.pipelineSwitch(2);
-        }
+
         double dtime = (curtime - lastTime) / 1000.0;
         lastTime = curtime;
         double error = this.error;
@@ -111,7 +107,11 @@ public class LimelightTracking{
         botHeading=Math.toDegrees(botHeading);
         botHeading=botHeading>0?-180+botHeading:180+botHeading;//this make zero the back of bot not intake
         telemetry.addData("botHeading",botHeading);
-
+        if(isRed) {
+            limelight.pipelineSwitch(1);
+        }else{
+            limelight.pipelineSwitch(2);
+        }
         if (result == null || !result.isValid()){
             isntGettingRecognized = true;
               /*

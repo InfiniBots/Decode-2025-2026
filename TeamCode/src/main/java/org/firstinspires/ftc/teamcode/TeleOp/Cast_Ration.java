@@ -74,7 +74,7 @@ public class Cast_Ration extends LinearOpMode {
     private boolean lastBack = false;
     private boolean prevRightStickButton = false;
     public static boolean continueing=false;
-
+    public boolean ytoggle=false;
     enum State {
         GENERAL_MOVEMENT,
         PEW_PEW
@@ -184,12 +184,13 @@ public class Cast_Ration extends LinearOpMode {
         cycleTime = System.currentTimeMillis();
         follower.update();
 
+
         while (opModeIsActive()) {
             currTime = System.currentTimeMillis();
             loopStart = System.currentTimeMillis();
             double xRobot = follower.getPose().getX();
             double yRobot = follower.getPose().getY();
-            distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 135));
+            distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 2));
             follower.update();
 
 
@@ -245,9 +246,10 @@ public class Cast_Ration extends LinearOpMode {
                 backLeftMotor.setPower(backLeft);
                 frontRightMotor.setPower(frontRight);
                 backRightMotor.setPower(backRight);
-                if(gamepad2.y){
-                    follower.setPose(isRed?new Pose(24,1):new Pose(152,13));
+                if(gamepad2.y&&!ytoggle){
+                    follower.setPose(isRed?new Pose(24,1,Math.toRadians(-90)):new Pose(152,13,Math.toRadians(-90)));
                 }
+                ytoggle = gamepad2.y;
 
                 if (gamepad2.back && !lastBack) {
                     isRed = !isRed;
@@ -394,7 +396,7 @@ public class Cast_Ration extends LinearOpMode {
             telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
             telemetry.addData("Position of Robot X: ", xRobot);
             telemetry.addData("Position of Robot Y: ", yRobot);
-            telemetry.addData("Distance to Red Goal: ", distanceToGoal);
+            telemetry.addData("Distance to  oal: ", distanceToGoal);
             telemetry.addData("Pipeline: ", lltracking.limelight.getStatus().getPipelineIndex());
             telemetry.addData("EquationDisabled: ", equationDisabled);
             telemetry.addData("Gamepad 2 B: ", gamepad2.b);
