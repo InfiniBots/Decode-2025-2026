@@ -61,15 +61,15 @@ public class LimelightTracking{
         lastTime = System.currentTimeMillis();
         limelight = op.hardwareMap.get(Limelight3A.class, "limelight");
         Voltage = op.hardwareMap.voltageSensor.iterator().next();
+        limelight.start();
+    }
+
+    public double turret_PID(long curtime,double rightx) {
         if(isRed) {
             limelight.pipelineSwitch(1);
         }else{
             limelight.pipelineSwitch(2);
         }
-        limelight.start();
-    }
-
-    public double turret_PID(long curtime,double rightx) {
         double dtime = (curtime - lastTime) / 1000.0;
         lastTime = curtime;
         double error = this.error;

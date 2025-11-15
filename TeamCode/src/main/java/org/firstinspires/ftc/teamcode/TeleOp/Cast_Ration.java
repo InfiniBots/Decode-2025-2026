@@ -7,9 +7,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -21,10 +19,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.subSystem.LimelightTracking;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.ArrayList;
@@ -51,6 +46,9 @@ public class Cast_Ration extends LinearOpMode {
     private DcMotorEx TopFlywheel;
     private DcMotorEx BottomFlywheel;
     public int ticksPerSecond = 0;
+    public double goalVel;
+    public long loopTime=80;
+    public long loopStart;
     public static int stopperThreshold = 80;
     public static boolean tracking=true;
     private long currTime;
@@ -64,7 +62,10 @@ public class Cast_Ration extends LinearOpMode {
     public static boolean usePedroMode = false;
     private Follower follower;
     public static int shootingSpeed = 1500;
-    public double distanceToRedGoal;
+    public double distanceToGoal;
+    public double futx;
+    public double futy;
+    public double lastGoalD;
     public int custom_tp;
     public boolean equationDisabled;
     public double Sensitivity;
@@ -185,9 +186,10 @@ public class Cast_Ration extends LinearOpMode {
 
         while (opModeIsActive()) {
             currTime = System.currentTimeMillis();
+            loopStart = System.currentTimeMillis();
             double xRobot = follower.getPose().getX();
             double yRobot = follower.getPose().getY();
-            distanceToRedGoal = Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2));
+            distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 135));
             follower.update();
 
 
@@ -251,7 +253,17 @@ public class Cast_Ration extends LinearOpMode {
                     isRed = !isRed;
                 }
                 lastBack = gamepad2.back;
-
+           /* futx=(loopTime*1000)*follower.getVelocity().getXComponent();;
+            futy=(loopTime*1000)*follower.getVelocity().getYComponent();
+            double futdistanceToGoal = Math.sqrt(Math.pow((130 - (follower.getPose().getX() + futx)), 2) + Math.pow((135 - (follower.getPose().getY() + futy)), 2));
+            double velcustomtps=(int)(283.2006 + (65.59412 * futdistanceToGoal) - (1.299762 * Math.pow(futdistanceToGoal,2)) + (0.01202799 * Math.pow(futdistanceToGoal, 3)) - (0.00003992315 * Math.pow(futdistanceToGoal, 4)));
+            velcustomtps=(((velcustomtps/60)/28)*(72*25.4*Math.PI)-futx);
+            telemetry.addData("goalVel",goalVel);
+           telemetry.addData("xcomp",follower.getVelocity().getXComponent());
+           telemetry.addData("ycomp",follower.getVelocity().getYComponent());
+           telemetry.addData("futx",futx);
+           telemetry.addData("new speed for shooter",(int)(283.2006 + (65.59412 * distanceToGoal) - (1.299762 * Math.pow(distanceToGoal,2)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4))));
+           */
             switch (state) {
                 case GENERAL_MOVEMENT:
                     Sensitivity=gSensitivity;
@@ -314,7 +326,7 @@ public class Cast_Ration extends LinearOpMode {
 
                 case PEW_PEW:
                     Sensitivity=0.79;
-                    custom_tp = (int)(283.2006 + (65.59412 * distanceToRedGoal) - (1.299762 * Math.pow(distanceToRedGoal,2)) + (0.01202799 * Math.pow(distanceToRedGoal, 3)) - (0.00003992315 * Math.pow(distanceToRedGoal, 4)));
+                    custom_tp = (int)(283.2006 + (65.59412 * distanceToGoal) - (1.299762 * Math.pow(distanceToGoal,2)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4)));
                     if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
@@ -382,14 +394,14 @@ public class Cast_Ration extends LinearOpMode {
             telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
             telemetry.addData("Position of Robot X: ", xRobot);
             telemetry.addData("Position of Robot Y: ", yRobot);
-            telemetry.addData("Distance to Red Goal: ", distanceToRedGoal);
+            telemetry.addData("Distance to Red Goal: ", distanceToGoal);
             telemetry.addData("Pipeline: ", lltracking.limelight.getStatus().getPipelineIndex());
             telemetry.addData("EquationDisabled: ", equationDisabled);
             telemetry.addData("Gamepad 2 B: ", gamepad2.b);
             telemetry.addData("left stick x val",gamepad1.left_stick_x);
             telemetry.addData("rearleft dt val",backLeftMotor.getPower());
             telemetry.update();
-
+            loopTime = System.currentTimeMillis() - loopStart;
         }
         for (int i = 0; i < cycles.size(); i++) {
             telemetry.addData("Cycle " + (i + 1) + ": ", cycles.get(i));
