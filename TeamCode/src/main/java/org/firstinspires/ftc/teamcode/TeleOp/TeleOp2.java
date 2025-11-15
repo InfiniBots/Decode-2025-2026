@@ -145,7 +145,7 @@ public class TeleOp2 extends LinearOpMode {
 
 
         while (opModeIsActive()) {
-            tracker.updateTurret(follower.getHeading(),follower.getPose().getX(),follower.getPose().getY(), gamepad1.right_stick_x);
+           // tracker.updateTurret(follower.getHeading(),follower.getPose().getX(),follower.getPose().getY(), gamepad1.right_stick_x);
             follower.update();
 
 
@@ -258,7 +258,7 @@ public class TeleOp2 extends LinearOpMode {
                         tracker.disableTurret();
                     } else if (gamepad2.y && isDisabled == true){
                         isDisabled = false;
-                        tracker.updateTurret(follower.getHeading(),follower.getPose().getX(),follower.getPose().getY(), gamepad1.right_stick_x);
+                        //tracker.updateTurret(follower.getHeading(),follower.getPose().getX(),follower.getPose().getY(), gamepad1.right_stick_x);
 
                     }
                     currTime = System.currentTimeMillis();

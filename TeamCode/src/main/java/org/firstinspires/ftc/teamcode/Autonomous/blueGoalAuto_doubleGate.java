@@ -54,7 +54,7 @@ public class blueGoalAuto_doubleGate extends LinearOpMode {
     public static final  Pose b_turnOffIntake2 = turnOffIntake2.mirror();
     public static final  Pose b_ballStack_3 =  new Pose(49, 38.000, Math.toRadians(180));
     public static final  Pose b_intakingBalls_3 = intakingBalls_3.mirror();
-    public static final Pose b_finalShoot = new Pose(53,120, Math.toRadians(63));
+    public static final Pose b_finalShoot =  new Pose(53,120, Math.toRadians(-117));
     public static final  Pose b_finalShootC1 =finalShootC1.mirror();
     public static final  Pose b_finalShootC2 = finalShootC2.mirror();
     public static final  Pose b_turnOffIntake3 = turnOffIntake3.mirror();

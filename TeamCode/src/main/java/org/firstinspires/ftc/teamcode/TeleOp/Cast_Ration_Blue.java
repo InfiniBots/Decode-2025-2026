@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.b_finalShoot;
+import static org.firstinspires.ftc.teamcode.TeleOp.Cast_Ration.isRed;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 @TeleOp
 @Config
 public class Cast_Ration_Blue extends LinearOpMode {
+    public boolean issRed=false;
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
@@ -116,7 +118,7 @@ public class Cast_Ration_Blue extends LinearOpMode {
             power1 = PID(Math.max(TopFlywheel.getVelocity(), BottomFlywheel.getVelocity()), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
             power1 = Math.max(-1.0, Math.min(1.0, power1));
         } else {
-            power1 = PID(Math.max(TopFlywheel.getVelocity(), BottomFlywheel.getVelocity()), -custom_tp, deltaTime) * (12.0 / Voltage.getVoltage());
+            power1 = PID(Math.max(TopFlywheel.getVelocity(), BottomFlywheel.getVelocity()), custom_tp, deltaTime) * (12.0 / Voltage.getVoltage());
             power1 = Math.max(-1.0, Math.min(1.0, power1));
         }
         lastTime = currTime;
@@ -241,7 +243,7 @@ public class Cast_Ration_Blue extends LinearOpMode {
             frontRightMotor.setPower(frontRight);
             backRightMotor.setPower(backRight);
             if(gamepad2.y){
-                follower.setPose(new Pose(152,13,Math.toRadians(-90)));
+                follower.setPose(new Pose(131,11,Math.toRadians(-90)));
             }
 
 
@@ -308,7 +310,7 @@ public class Cast_Ration_Blue extends LinearOpMode {
                 case PEW_PEW:
                     Sensitivity=0.79;
                     custom_tp = (int)(283.2006 + (65.59412 * distanceToBlueGoal) - (1.299762 * Math.pow(distanceToBlueGoal,2)) + (0.01202799 * Math.pow(distanceToBlueGoal, 3)) - (0.00003992315 * Math.pow(distanceToBlueGoal, 4)));
-                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x);
+                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x,issRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
                     if (gamepad2.a) {

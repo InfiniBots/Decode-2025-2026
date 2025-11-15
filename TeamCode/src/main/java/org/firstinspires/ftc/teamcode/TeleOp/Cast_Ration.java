@@ -247,12 +247,13 @@ public class Cast_Ration extends LinearOpMode {
                 frontRightMotor.setPower(frontRight);
                 backRightMotor.setPower(backRight);
                 if(gamepad2.y&&!ytoggle){
-                    follower.setPose(isRed?new Pose(24,1,Math.toRadians(-90)):new Pose(152,13,Math.toRadians(-90)));
+                    follower.setPose(new Pose(7,11,Math.toRadians(-90)));
                 }
                 ytoggle = gamepad2.y;
 
                 if (gamepad2.back && !lastBack) {
                     isRed = !isRed;
+                    follower.setPose(isRed?finalShoot:b_finalShoot);
                 }
                 lastBack = gamepad2.back;
            /* futx=(loopTime*1000)*follower.getVelocity().getXComponent();;
@@ -329,7 +330,7 @@ public class Cast_Ration extends LinearOpMode {
                 case PEW_PEW:
                     Sensitivity=0.79;
                     custom_tp = (int)(283.2006 + (65.59412 * distanceToGoal) - (1.299762 * Math.pow(distanceToGoal,2)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4)));
-                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x);
+                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x,isRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
                     if (gamepad2.a) {

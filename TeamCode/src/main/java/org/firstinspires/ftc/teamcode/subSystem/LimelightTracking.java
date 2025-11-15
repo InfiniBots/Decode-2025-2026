@@ -101,7 +101,7 @@ public class LimelightTracking{
         telemetry.addData("turr Disabled !", " ");
     }
 
-    public void updateTurret(double botHeading, double botXPos, double botYpos,double rightx){
+    public void updateTurret(double botHeading, double botXPos, double botYpos,double rightx,boolean isRed){
         curTime=System.currentTimeMillis();
         result = limelight.getLatestResult();
         botHeading=Math.toDegrees(botHeading);
