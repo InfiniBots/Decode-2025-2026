@@ -73,12 +73,6 @@ public class Cast_Ration extends LinearOpMode {
     private boolean lastBack = false;
     private boolean prevRightStickButton = false;
     public static boolean continueing=false;
-    Pose currentPos = new Pose( 80.000, 80, Math.toRadians(-90));
-
-
-    double goalPosX = 130;
-    double goalPosY = 135;
-
 
     enum State {
         GENERAL_MOVEMENT,
@@ -204,10 +198,10 @@ public class Cast_Ration extends LinearOpMode {
             LynxModule expansionHub = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
 
             double expansionCurrentAmps = expansionHub.getCurrent(CurrentUnit.AMPS);
-            if(gamepad2.a&& turretOnOff){
+            if(gamepad2.x&& turretOnOff){
                 tracking=!tracking;
                 turretOnOff =false;
-            }else if(!gamepad2.a){
+            }else if(!gamepad2.x){
                 turretOnOff =true;
             }
 
