@@ -172,8 +172,6 @@ public class Cast_Ration extends LinearOpMode {
         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        IntakeMotor.setPower(-0.1);
-
         state = State.GENERAL_MOVEMENT;
 
 
