@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.StorePos.curPose;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.ballStack_1;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.ballStack_2;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto_doubleGate.finalShootC1;
@@ -297,6 +298,7 @@ public class blueGoalAuto_doubleGate extends LinearOpMode {
                     }
                     break;
             }
+            curPose=follower.getPose();
             robot.UpdateRobot();
             follower.update();
             telemetry.addData("ballslaunched",robot.ballsLaunched);

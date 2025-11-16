@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.StorePos.curPose;
 import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.b_finalShoot;
+import static org.firstinspires.ftc.teamcode.Autonomous.StorePos.curPose;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -134,7 +136,7 @@ public class Cast_Ration extends LinearOpMode {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setPose(isRed?finalShoot:b_finalShoot);
+        follower.setPose(curPose);
         //follower.setPose(new Pose(80,80,Math.toRadians(-90)));t
         follower.update();
 
@@ -402,6 +404,7 @@ public class Cast_Ration extends LinearOpMode {
             telemetry.addData("left stick x val",gamepad1.left_stick_x);
             telemetry.addData("rearleft dt val",backLeftMotor.getPower());
             telemetry.update();
+            curPose=follower.getPose();
             loopTime = System.currentTimeMillis() - loopStart;
         }
         for (int i = 0; i < cycles.size(); i++) {

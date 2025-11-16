@@ -14,6 +14,7 @@ import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.turnOffIntak
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.turnOffIntake2;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.turnOffIntake3;
 import static org.firstinspires.ftc.teamcode.TeleOp.Robot.issRED;
+import static org.firstinspires.ftc.teamcode.Autonomous.StorePos.curPose;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -277,6 +278,7 @@ public class blueNearAuto extends LinearOpMode {
                     }
                     break;
             }
+            curPose=follower.getPose();
             robot.UpdateRobot();
             follower.update();
             telemetry.addData("ballslaunched",robot.ballsLaunched);

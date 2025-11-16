@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.StorePos.curPose;
 import static org.firstinspires.ftc.teamcode.TeleOp.Robot.issRED;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -264,6 +265,7 @@ public class redGoalAuto extends LinearOpMode {
                     }
                     break;
             }
+            curPose=follower.getPose();
             robot.UpdateRobot();
             follower.update();
             telemetry.addData("ballslaunched",robot.ballsLaunched);
