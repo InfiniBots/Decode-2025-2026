@@ -10,6 +10,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -77,6 +78,7 @@ public class Cast_Ration extends LinearOpMode {
     private boolean prevRightStickButton = false;
     public static boolean continueing=false;
     public boolean ytoggle=false;
+    public double stationaryEquation = 283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
     enum State {
         GENERAL_MOVEMENT,
         PEW_PEW
@@ -108,7 +110,43 @@ public class Cast_Ration extends LinearOpMode {
         errorSum += (error * time);
         lastError = error;
         return ((kp * error) + (ki * errorSum) + (kd * errorChange) + ((0.0007448464 - (3.3333219e-7 * targetVelocity) + (8.791839e-11 * targetVelocity * targetVelocity)) * targetVelocity));//added new velocity thingy
+
     }
+
+    public double computeMovingCompensatedTPS(double distanceToGoal, Pose robotPose, Vector robotVelocity, boolean isRed){
+
+        double goalX = isRed ? 130 : 14;
+        double goalY = 135;
+
+        double vx = robotVelocity.getXComponent();
+        double vy = robotVelocity.getYComponent();
+
+        double dx = goalX - robotPose.getX();
+        double dy = goalY - robotPose.getY();
+        double dist = Math.sqrt(dx*dx + dy*dy);
+
+
+        double ux = dx / dist;
+        double uy = dy / dist;
+
+        double v_robot = vx * Math.cos((Turret.getCurrentPosition()* 2 * Math.PI ) / (384.5 * (140/16))) + vy * Math.sin((Turret.getCurrentPosition()* 2 * Math.PI ) / (384.5 * (140/16)));
+
+        double stationaryTPS = 283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
+
+        telemetry.addData("Stationary: ", stationaryTPS);
+        telemetry.addData("dx", dx);
+        telemetry.addData("dy", dy);
+        telemetry.addData("dist, ", dist);
+        telemetry.addData("ux", ux);
+        telemetry.addData("uy, ", uy);
+        telemetry.addData("v_robot", v_robot);
+        telemetry.addData("velocity x", robotVelocity.getXComponent());
+        telemetry.addData("velocity y,", robotVelocity.getYComponent());
+
+        return stationaryTPS - (60/(720*Math.PI)) * v_robot;
+
+    }
+
 
     public void updateShooter() {
         deltaTime = currTime - lastTime;
@@ -329,7 +367,7 @@ public class Cast_Ration extends LinearOpMode {
 
                 case PEW_PEW:
                     Sensitivity=0.79;
-                    custom_tp = (int)(283.2006 + (65.59412 * distanceToGoal) - (1.299762 * Math.pow(distanceToGoal,2)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4)));
+                    custom_tp = (int) computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed);
                     if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x,isRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
@@ -403,6 +441,8 @@ public class Cast_Ration extends LinearOpMode {
             telemetry.addData("Gamepad 2 B: ", gamepad2.b);
             telemetry.addData("left stick x val",gamepad1.left_stick_x);
             telemetry.addData("rearleft dt val",backLeftMotor.getPower());
+            telemetry.addData("difference of velocity: ",  computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed) - stationaryEquation);
+            telemetry.addData("full thing: ", computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed));
             telemetry.update();
             curPose=follower.getPose();
             loopTime = System.currentTimeMillis() - loopStart;

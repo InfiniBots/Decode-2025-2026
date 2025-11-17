@@ -170,17 +170,6 @@ public class LimelightTracking{
 
 
         }
-        telemetry.addData("botHeading",botHeading);
-        telemetry.addData("botxpos",botXPos);
-        telemetry.addData("botypos",botYpos);
-        telemetry.addData("isn'tGettingRecognized: ", isntGettingRecognized);
-        telemetry.addData("target x: ", x);
-        telemetry.addData("error: ", error);
-        telemetry.addData("targetPOS",targetPosition);
-        telemetry.addData("limiting",limiting);
-        telemetry.addData("isn'tGettingRecognized: ", isntGettingRecognized);
-        telemetry.addData("currpos",Turret.getCurrentPosition());
-        telemetry.update();
 
     }
                                                                                                 
