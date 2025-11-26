@@ -20,12 +20,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.subSystem.LimelightTracking;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.ArrayList;
+import java.util.List;
 
 @TeleOp
 @Config
@@ -71,7 +70,7 @@ public class Cast_Ration extends LinearOpMode {
     public double lastGoalD;
     public int custom_tp;
     public boolean equationDisabled;
-    public double Sensitivity;
+    public double Sensitivity = 0.85;
     public static double gSensitivity=0.85;
     public static double pSensitivity=0.67;
     public static double shotDelay = 0.4;
@@ -114,6 +113,7 @@ public class Cast_Ration extends LinearOpMode {
         return ((kp * error) + (ki * errorSum) + (kd * errorChange) + ((0.0007448464 - (3.3333219e-7 * targetVelocity) + (8.791839e-11 * targetVelocity * targetVelocity)) * targetVelocity));//added new velocity thingy
 
     }
+
 
     public double computeMovingCompensatedTPS(double distanceToGoal, Pose robotPose, Vector robotVelocity, boolean isRed){
 
@@ -173,8 +173,7 @@ public class Cast_Ration extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-
+        this.telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(curPose);
         //follower.setPose(new Pose(80,80,Math.toRadians(-90)));t
@@ -216,6 +215,8 @@ public class Cast_Ration extends LinearOpMode {
         IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         state = State.GENERAL_MOVEMENT;
 
+        LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
+        LynxModule expansionHub = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
 
         telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
         telemetry.update();
@@ -233,24 +234,19 @@ public class Cast_Ration extends LinearOpMode {
             double xRobot = follower.getPose().getX();
             double yRobot = follower.getPose().getY();
 
-          /*  double vx = follower.getVelocity().getXComponent();
+          /*double vx = follower.getVelocity().getXComponent();
             double vy = follower.getVelocity().getYComponent();
 
             double ax = follower.getAcceleration().getXComponent();
             double ay = follower.getAcceleration().getYComponent();
 
             xRobot = xRobot + (vx * shotDelay) + (0.5 * ax * shotDelay * shotDelay);
-            yRobot = yRobot + (vy * shotDelay) + (0.5 * ay * shotDelay * shotDelay);*/
+            yRobot = yRobot + (vy * shotDelay) + (0.5 * ay * shotDelay * shotDelay); */
 
             distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 2));
             follower.update();
 
-
-            LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
-
             double totalCurrentAmps = controlHub.getCurrent(CurrentUnit.AMPS);
-
-            LynxModule expansionHub = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
 
             double expansionCurrentAmps = expansionHub.getCurrent(CurrentUnit.AMPS);
             if(gamepad2.x&& turretOnOff){
@@ -382,7 +378,8 @@ public class Cast_Ration extends LinearOpMode {
                 case PEW_PEW:
                     Sensitivity=0.79;
                     custom_tp = (int) computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed);
-                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x,isRed);
+                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), follower.getVelocity().getXComponent(),
+                                                        follower.getVelocity().getYComponent(), gamepad1.right_stick_x,isRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
                     if (gamepad2.a) {
@@ -466,28 +463,3 @@ public class Cast_Ration extends LinearOpMode {
         telemetry.update();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// hey there

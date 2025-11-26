@@ -310,7 +310,8 @@ public class Cast_Ration_Blue extends LinearOpMode {
                 case PEW_PEW:
                     Sensitivity=0.79;
                     custom_tp = (int)(283.2006 + (65.59412 * distanceToBlueGoal) - (1.299762 * Math.pow(distanceToBlueGoal,2)) + (0.01202799 * Math.pow(distanceToBlueGoal, 3)) - (0.00003992315 * Math.pow(distanceToBlueGoal, 4)));
-                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x,issRed);
+                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), follower.getVelocity().getXComponent(),
+                                                        follower.getVelocity().getYComponent(), gamepad1.right_stick_x,issRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
                     if (gamepad2.a) {
