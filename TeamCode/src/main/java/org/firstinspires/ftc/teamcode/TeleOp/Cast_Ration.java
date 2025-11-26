@@ -74,7 +74,9 @@ public class Cast_Ration extends LinearOpMode {
     public double Sensitivity;
     public static double gSensitivity=0.85;
     public static double pSensitivity=0.67;
+    public static double shotDelay = 0.4;
     private boolean lastBack = false;
+    private boolean lastB = false;
     private boolean prevRightStickButton = false;
     public static boolean continueing=false;
     public boolean ytoggle=false;
@@ -129,11 +131,10 @@ public class Cast_Ration extends LinearOpMode {
         double ux = dx / dist;
         double uy = dy / dist;
 
-        double v_robot = vx * Math.cos((Turret.getCurrentPosition()* 2 * Math.PI ) / (384.5 * (140/16))) + vy * Math.sin((Turret.getCurrentPosition()* 2 * Math.PI ) / (384.5 * (140/16)));
+        double v_robot = vx * ux + vy * uy;
 
         double stationaryTPS = 283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
 
-        telemetry.addData("Stationary: ", stationaryTPS);
         telemetry.addData("dx", dx);
         telemetry.addData("dy", dy);
         telemetry.addData("dist, ", dist);
@@ -143,7 +144,9 @@ public class Cast_Ration extends LinearOpMode {
         telemetry.addData("velocity x", robotVelocity.getXComponent());
         telemetry.addData("velocity y,", robotVelocity.getYComponent());
 
-        return stationaryTPS - (60/(720*Math.PI)) * v_robot;
+        double wheelCircumferenceInches = Math.PI * (72.0/25.4); //wheel diameter in inches
+        double ticksPerInch = 28.0/wheelCircumferenceInches; //motor ticks per rev
+        return stationaryTPS - ticksPerInch * v_robot;
 
     }
 
@@ -151,11 +154,10 @@ public class Cast_Ration extends LinearOpMode {
     public void updateShooter() {
         deltaTime = currTime - lastTime;
         double power1;
-        if (gamepad2.b && !equationDisabled){
-            equationDisabled = true;
-        } else if (gamepad2.b && equationDisabled){
-            equationDisabled = false;
+        if (gamepad2.b && !lastB){
+            equationDisabled = !equationDisabled;
         }
+        lastB = gamepad2.b;
         if (equationDisabled){
             power1 = PID(Math.max(TopFlywheel.getVelocity(), BottomFlywheel.getVelocity()), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
             power1 = Math.max(-1.0, Math.min(1.0, power1));
@@ -225,9 +227,21 @@ public class Cast_Ration extends LinearOpMode {
 
         while (opModeIsActive()) {
             currTime = System.currentTimeMillis();
+
             loopStart = System.currentTimeMillis();
+
             double xRobot = follower.getPose().getX();
             double yRobot = follower.getPose().getY();
+
+          /*  double vx = follower.getVelocity().getXComponent();
+            double vy = follower.getVelocity().getYComponent();
+
+            double ax = follower.getAcceleration().getXComponent();
+            double ay = follower.getAcceleration().getYComponent();
+
+            xRobot = xRobot + (vx * shotDelay) + (0.5 * ax * shotDelay * shotDelay);
+            yRobot = yRobot + (vy * shotDelay) + (0.5 * ay * shotDelay * shotDelay);*/
+
             distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 2));
             follower.update();
 
@@ -421,7 +435,7 @@ public class Cast_Ration extends LinearOpMode {
             }
             updateShooter();
 
-            telemetry.addData("custom tps",custom_tp);
+            telemetry.addData("Custom TPS",custom_tp);
             telemetry.addData("State: ", state);
             telemetry.addData("TopFlywheel Velocity", TopFlywheel.getVelocity());
             telemetry.addData("BottomFlywheel Velocity", BottomFlywheel.getVelocity());
@@ -435,14 +449,10 @@ public class Cast_Ration extends LinearOpMode {
             telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
             telemetry.addData("Position of Robot X: ", xRobot);
             telemetry.addData("Position of Robot Y: ", yRobot);
-            telemetry.addData("Distance to  oal: ", distanceToGoal);
+            telemetry.addData("Distance to Goal: ", distanceToGoal);
             telemetry.addData("Pipeline: ", lltracking.limelight.getStatus().getPipelineIndex());
             telemetry.addData("EquationDisabled: ", equationDisabled);
             telemetry.addData("Gamepad 2 B: ", gamepad2.b);
-            telemetry.addData("left stick x val",gamepad1.left_stick_x);
-            telemetry.addData("rearleft dt val",backLeftMotor.getPower());
-            telemetry.addData("difference of velocity: ",  computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed) - stationaryEquation);
-            telemetry.addData("full thing: ", computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed));
             telemetry.update();
             curPose=follower.getPose();
             loopTime = System.currentTimeMillis() - loopStart;
