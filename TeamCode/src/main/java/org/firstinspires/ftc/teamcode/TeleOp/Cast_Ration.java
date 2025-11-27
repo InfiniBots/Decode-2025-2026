@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.Autonomous.StorePos.curPose;
 import static org.firstinspires.ftc.teamcode.Autonomous.blueNearAuto.b_finalShoot;
-import static org.firstinspires.ftc.teamcode.Autonomous.StorePos.curPose;
 import static org.firstinspires.ftc.teamcode.Autonomous.redGoalAuto.finalShoot;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -38,6 +37,11 @@ public class Cast_Ration extends LinearOpMode {
     private DcMotorEx Turret;
     private VoltageSensor Voltage;
     public LimelightTracking lltracking;
+    public double intakeCurrent=0;
+    public double frontLeft;
+    public double frontRight;
+    public double backLeft;
+    public double backRight;
     public static double kp = 0.003;
     public static double ki = 0.0;
     public static double kd = 0.0;
@@ -52,6 +56,7 @@ public class Cast_Ration extends LinearOpMode {
     public long loopTime=80;
     public long loopStart;
     public static int stopperThreshold = 80;
+    public static double emptyThreshold = 700;//TODO edit this variable
     public static boolean tracking=true;
     private long currTime;
     private long deltaTime;
@@ -63,24 +68,32 @@ public class Cast_Ration extends LinearOpMode {
     public boolean turretzeroing=false;
     public static boolean usePedroMode = false;
     private Follower follower;
+    public double heading;
+    public double Xpos;
+    public double Ypos;
     public static int shootingSpeed = 1500;
     public double distanceToGoal;
+    public double timef;
     public double futx;
     public double futy;
     public double lastGoalD;
     public int custom_tp;
     public boolean equationDisabled;
-    public double Sensitivity = 0.85;
+    public boolean shooterOn=false;
+    public static boolean autoShoot=true;
+    public boolean slowShot=true;
+    public double TopVelocity;
+    public double bottomVelocity;
+    public double Sensitivity;
     public static double gSensitivity=0.85;
-    public static double pSensitivity=0.67;
-    public static double shotDelay = 0.4;
+    public static double pSensitivity=0.79;
     private boolean lastBack = false;
     private boolean lastB = false;
     private boolean prevRightStickButton = false;
     public static boolean continueing=false;
     public boolean ytoggle=false;
     public boolean gettingTailgatedBySomeExodiusTypeBot = false;
-    public double stationaryEquation = 283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
+    public double stationaryTPS = 283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
     enum State {
         GENERAL_MOVEMENT,
         PEW_PEW
@@ -91,7 +104,13 @@ public class Cast_Ration extends LinearOpMode {
     public boolean turrToggle=true;
     public boolean turretOnOff =true;
     public boolean PewPewActive=false;
-    public static double chillSpeed=-0.2;
+    public int intakeReads=0;
+    public ArrayList<Double> intakeReadings=new ArrayList<>();
+    public double intakeAvg=1;
+    public static double chillSpeed=-1;
+    public static double intakeMult=100;
+    public long intakespikeDelay;
+    public static double intakespikeThresh=500;
     /*public PathChain park;
     public void buildPath(){
         park = follower.pathBuilder()
@@ -154,22 +173,58 @@ public class Cast_Ration extends LinearOpMode {
 
     public void updateShooter() {
         deltaTime = currTime - lastTime;
-        double power1;
         if (gamepad2.b && !lastB){
             equationDisabled = !equationDisabled;
         }
         lastB = gamepad2.b;
-        if (equationDisabled){
-            power1 = PID(Math.max(TopFlywheel.getVelocity(), BottomFlywheel.getVelocity()), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
-            power1 = Math.max(-1.0, Math.min(1.0, power1));
-        } else {
-            power1 = PID(Math.max(TopFlywheel.getVelocity(), BottomFlywheel.getVelocity()), custom_tp, deltaTime) * (12.0 / Voltage.getVoltage());
-            power1 = Math.max(-1.0, Math.min(1.0, power1));
+        if(shooterOn) {
+            double power1;
+            if (equationDisabled||slowShot){
+                power1 = PID(Math.max(TopVelocity, bottomVelocity), ticksPerSecond, deltaTime) * (12.0 / Voltage.getVoltage());
+                power1 = Math.max(-1.0, Math.min(1.0, power1));
+            } else {
+                power1 = PID(Math.max(TopVelocity, bottomVelocity), custom_tp, deltaTime) * (12.0 / Voltage.getVoltage());
+                power1 = Math.max(-1.0, Math.min(1.0, power1));
+            }
+            lastTime = currTime;
+
+            TopFlywheel.setPower(-power1);
+            BottomFlywheel.setPower(-power1);
+        }else{
+            TopFlywheel.setPower(0);
+            BottomFlywheel.setPower(0);
         }
-        lastTime = currTime;
-        TopFlywheel.setPower(-power1);
-        BottomFlywheel.setPower(-power1);
     }
+    public void updateDistanceToGoal_stationaryTPS(){
+        double xRobot = follower.getPose().getX();
+        double yRobot = follower.getPose().getY();
+        distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 2));
+        stationaryTPS =283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
+        timef=1;//input whatever equation here
+    }
+    public void bulkRead(){
+        Xpos=follower.getPose().getX();
+        Ypos=follower.getPose().getY();
+        heading=follower.getHeading();
+        TopVelocity=TopFlywheel.getVelocity();
+        bottomVelocity=BottomFlywheel.getVelocity();
+        intakeCurrent=IntakeMotor.getCurrent(CurrentUnit.AMPS);
+    }
+    public boolean inZone(double x,double y){
+        if((y>=x&&y>=-x+144)||(y<=x-48&&y<=-x+96)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    public boolean isEmpty(){
+        if(intakeAvg<emptyThreshold){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -177,7 +232,6 @@ public class Cast_Ration extends LinearOpMode {
         this.telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(curPose);
-        //follower.setPose(new Pose(80,80,Math.toRadians(-90)));t
         follower.update();
 
 
@@ -211,6 +265,7 @@ public class Cast_Ration extends LinearOpMode {
         //Stopper2 = hardwareMap.get(Servo.class, "Stopper2");
 
         Turret = hardwareMap.get(DcMotorEx.class, "Turret");
+        Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);//TODO temporary for testing purposes
         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -218,34 +273,31 @@ public class Cast_Ration extends LinearOpMode {
 
         LynxModule controlHub = hardwareMap.get(LynxModule.class, "Control Hub");
         LynxModule expansionHub = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
         telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
         telemetry.update();
         waitForStart();
         lastTime = System.currentTimeMillis();
         cycleTime = System.currentTimeMillis();
+        intakespikeDelay=System.currentTimeMillis();
         follower.update();
 
 
         while (opModeIsActive()) {
             currTime = System.currentTimeMillis();
-
-            loopStart = System.currentTimeMillis();
-
-            double xRobot = follower.getPose().getX();
-            double yRobot = follower.getPose().getY();
-
-          /*double vx = follower.getVelocity().getXComponent();
-            double vy = follower.getVelocity().getYComponent();
-
-            double ax = follower.getAcceleration().getXComponent();
-            double ay = follower.getAcceleration().getYComponent();
-
-            xRobot = xRobot + (vx * shotDelay) + (0.5 * ax * shotDelay * shotDelay);
-            yRobot = yRobot + (vy * shotDelay) + (0.5 * ay * shotDelay * shotDelay); */
-
-            distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 2));
+            loopStart = currTime;
+            for (LynxModule hub : allHubs) {
+                hub.clearBulkCache();
+            }
+            bulkRead();
+            updateDistanceToGoal_stationaryTPS();
             follower.update();
+
+
 
             double totalCurrentAmps = controlHub.getCurrent(CurrentUnit.AMPS);
 
@@ -268,29 +320,29 @@ public class Cast_Ration extends LinearOpMode {
                 once = true;*/
 
 
-            double x = gamepad1.left_stick_x * 1.1;
-            double y = -gamepad1.left_stick_y;
-            double turn = gamepad1.right_stick_x * Sensitivity;
+                double x = gamepad1.left_stick_x * 1.1;
+                double y = -gamepad1.left_stick_y;
+                double turn = gamepad1.right_stick_x * Sensitivity;
 
-            double theta = Math.atan2(y, x);
-            double power = Math.hypot(x, y);
+                double theta = Math.atan2(y, x);
+                double power = Math.hypot(x, y);
 
-            double sin = Math.sin(theta - Math.PI / 4);
-            double cos = Math.cos(theta - Math.PI / 4);
-            double max = Math.max(Math.abs(sin), Math.abs(cos));
+                double sin = Math.sin(theta - Math.PI / 4);
+                double cos = Math.cos(theta - Math.PI / 4);
+                double max = Math.max(Math.abs(sin), Math.abs(cos));
 
-            double frontLeft = power * cos / max + turn;
-            double frontRight = power * sin / max - turn;
-            double backLeft = power * sin / max + turn;
-            double backRight = power * cos / max - turn;
+                 frontLeft = power * cos / max + turn;
+                 frontRight = power * sin / max - turn;
+                 backLeft = power * sin / max + turn;
+                 backRight = power * cos / max - turn;
 
-            if ((power + Math.abs(turn)) > 1) {
-                frontLeft /= power + Math.abs(turn);
-                frontRight /= power + Math.abs(turn);
-                backLeft /= power + Math.abs(turn);
-                backRight /= power + Math.abs(turn);
-            }
-            if (totalCurrentAmps >= 600613){ // i have no clue what the threshold for the amps taken by the drivetrain is to the point where it stops other motors from functioning at full speed so i just put google as a placeholder this should change hopefully in the near future
+                if ((power + Math.abs(turn)) > 1) {
+                    frontLeft /= power + Math.abs(turn);
+                    frontRight /= power + Math.abs(turn);
+                    backLeft /= power + Math.abs(turn);
+                    backRight /= power + Math.abs(turn);
+                }
+           /* if (totalCurrentAmps >= 600613){ // i have no clue what the threshold for the amps taken by the drivetrain is to the point where it stops other motors from functioning at full speed so i just put google as a placeholder this should change hopefully in the near future
                 gettingTailgatedBySomeExodiusTypeBot = true; // :(
                 frontRight *= 0.75; // it should in theory keep doing 75% of its full power until it reaches the threshold keyword in theory
                 frontLeft *= 0.75; // it should in theory keep doing 75% of its full power until it reaches the threshold keyword in theory
@@ -299,37 +351,49 @@ public class Cast_Ration extends LinearOpMode {
             } else {
                 gettingTailgatedBySomeExodiusTypeBot = false; // :D
             }
+            ts is NOT the play*/
 
-            frontLeftMotor.setPower(frontLeft);
-            backLeftMotor.setPower(backLeft);
-            frontRightMotor.setPower(frontRight);
-            backRightMotor.setPower(backRight);
-            if(gamepad2.y&&!ytoggle){
-                follower.setPose(new Pose(7,11,Math.toRadians(-90)));
-            }
-            ytoggle = gamepad2.y;
+                frontLeftMotor.setPower(frontLeft);
+                backLeftMotor.setPower(backLeft);
+                frontRightMotor.setPower(frontRight);
+                backRightMotor.setPower(backRight);
+                if(gamepad2.y&&!ytoggle){
+                    follower.setPose(new Pose(7,11,Math.toRadians(-90)));
+                }
+                ytoggle = gamepad2.y;
 
-            if (gamepad2.back && !lastBack) {
-                isRed = !isRed;
-                follower.setPose(isRed?finalShoot:b_finalShoot);
-            }
+                if (gamepad2.back && !lastBack) {
+                    isRed = !isRed;
+                    follower.setPose(isRed?finalShoot:b_finalShoot);
+                }
             lastBack = gamepad2.back;
-           /* futx=(loopTime*1000)*follower.getVelocity().getXComponent();;
-            futy=(loopTime*1000)*follower.getVelocity().getYComponent();
-            double futdistanceToGoal = Math.sqrt(Math.pow((130 - (follower.getPose().getX() + futx)), 2) + Math.pow((135 - (follower.getPose().getY() + futy)), 2));
-            double velcustomtps=(int)(283.2006 + (65.59412 * futdistanceToGoal) - (1.299762 * Math.pow(futdistanceToGoal,2)) + (0.01202799 * Math.pow(futdistanceToGoal, 3)) - (0.00003992315 * Math.pow(futdistanceToGoal, 4)));
-            velcustomtps=(((velcustomtps/60)/28)*(72*25.4*Math.PI)-futx);
-            telemetry.addData("goalVel",goalVel);
-           telemetry.addData("xcomp",follower.getVelocity().getXComponent());
-           telemetry.addData("ycomp",follower.getVelocity().getYComponent());
-           telemetry.addData("futx",futx);
-           telemetry.addData("new speed for shooter",(int)(283.2006 + (65.59412 * distanceToGoal) - (1.299762 * Math.pow(distanceToGoal,2)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4))));
-           */
+            /*futx=follower.getVelocity().getXComponent();
+            futy=follower.getVelocity().getYComponent();
+            double xLength = (isRed?130:14 - Xpos);//we know the goals are at the very most right or left so we subtract botx from goal to get our xlenght. we dont have absolute val to keep direction
+            double yLength = (135 - Ypos);
+            double angGoal =Math.atan2(yLength, xLength);
+            double newv=futx*Math.cos(angGoal)+futy*Math.sin(angGoal);
+            double futDistanceToGoal=distanceToGoal-newv*timef;*/
+
             switch (state) {
                 case GENERAL_MOVEMENT:
+                    slowShot=true;
+                    intakeReadings.add(IntakeMotor.getCurrent(CurrentUnit.AMPS));
+                    if(intakeReadings.size()>3){
+                        intakeReadings.remove(0);
+                    }
+                    //intake avg
+                    for(int i=0;i<intakeReadings.size();i++){
+                        if(i==0){
+                            intakeAvg=0;
+                        }
+                        intakeAvg+=intakeReadings.get(0);
+                        if(i==intakeReadings.size()-1)intakeAvg=intakeAvg*intakeMult;
+                    }
+                    shooterOn=false;
                     Sensitivity=gSensitivity;
                     PewPewActive=false;
-                    custom_tp = 0;
+                    custom_tp = 0;//TODO  make slow spin also prob need to change shooterOn for that
                     ticksPerSecond = 0;
                     if (gamepad1.left_trigger > 0.1) {
                         IntakeMotor.setPower(1);
@@ -339,21 +403,6 @@ public class Cast_Ration extends LinearOpMode {
                         IntakeMotor.setPower(chillSpeed);
                     }
                     lltracking.turrReset();
-                    /*if(gamepad1.a&&turrToggle){
-                        lltracking.turrReset();
-                        turretzeroing=!turretzeroing;
-                        turrToggle=false;
-                    }else if(!gamepad1.a){
-                        turrToggle=true;
-                    }
-                    if(turretzeroing){
-                        lltracking.turrReset();
-                    }else{
-                       if(tracking) lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), gamepad1.right_stick_x);
-
-                    }
-                    telemetry.addData("turretzeroing",turretzeroing);
-                    telemetry.addData("turrToggle",turrToggle);*/
 
                     if (gamepad2.dpad_left) {
                         Turret.setPower(-0.5);
@@ -370,7 +419,10 @@ public class Cast_Ration extends LinearOpMode {
                         PewPewActive=false;
                         continueing=true;
                     }
-
+                    if(autoShoot&&!isEmpty()&&currTime-intakespikeDelay>=intakespikeThresh){
+                        state = State.PEW_PEW;
+                        PewPewActive=true;
+                    }
 
                     if (gamepad2.dpad_up) {
                         Stopper1.setPosition(1);
@@ -386,15 +438,36 @@ public class Cast_Ration extends LinearOpMode {
                     break;
 
                 case PEW_PEW:
-                    Sensitivity=0.79;
+                    slowShot=false;
+                    intakeReadings.add(IntakeMotor.getCurrent(CurrentUnit.AMPS));
+                    if(intakeReadings.size()>3){
+                        intakeReadings.remove(0);
+                    }
+                    //intake avg
+                    for(int i=0;i<intakeReadings.size();i++){
+                        if(i==0){
+                            intakeAvg=0;
+                        }
+                        intakeAvg+=intakeReadings.get(0);
+                        if(i==intakeReadings.size()-1)intakeAvg=intakeAvg*intakeMult;
+                    }
+
+                    Sensitivity=pSensitivity;
                     custom_tp = (int) computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed);
-                    if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), follower.getVelocity().getXComponent(),
-                            follower.getVelocity().getYComponent(), gamepad1.right_stick_x,isRed);
+                    shooterOn=true;
+                    if(tracking)lltracking.updateTurret(heading,Xpos, Ypos,follower.getVelocity().getXComponent(),follower.getVelocity().getYComponent(),gamepad1.right_stick_x, isRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
                     if (gamepad2.a) {
                         Stopper1.setPosition(1);
                         // Stopper2.setPosition(1);
+                    }
+                    if(autoShoot) {
+                        if (isEmpty() || !inZone(Xpos, Ypos)) {
+                            PewPewActive = false;
+                        } else if (!isEmpty() || inZone(Xpos, Ypos)) {
+                            PewPewActive = true;
+                        }
                     }
                     if (gamepad1.left_bumper) {
                         double cyc = (currTime - cycleTime) / 1000;
@@ -403,6 +476,7 @@ public class Cast_Ration extends LinearOpMode {
                         ticksPerSecond = 0;
                         PewPewActive=false;
                         state = State.GENERAL_MOVEMENT;
+                        intakeReadings.clear();
                     }
                     if(gamepad1.right_bumper&&!continueing) {
                         PewPewActive = true;
@@ -414,23 +488,23 @@ public class Cast_Ration extends LinearOpMode {
                     if(PewPewActive) {
                         IntakeMotor.setPower(-1);
                     }else{
-                        IntakeMotor.setPower(-0.2);
+                        IntakeMotor.setPower(chillSpeed);
                     }
 
                     if (gamepad2.dpad_up) {
                         Stopper1.setPosition(1);
-                        //  Stopper2.setPosition(1);
+                      //  Stopper2.setPosition(1);
                     } else if (gamepad2.dpad_down) {
                         Stopper1.setPosition(0);
-                        // Stopper2.setPosition(0);
+                       // Stopper2.setPosition(0);
                     } else {
                         if(!equationDisabled) {
-                            if (PewPewActive && Math.abs(TopFlywheel.getVelocity() - custom_tp) < stopperThreshold) {
+                            if (PewPewActive && Math.abs(Math.max(TopVelocity,bottomVelocity) - custom_tp) < stopperThreshold&& (lltracking.isTracked()||!tracking)) {
                                 Stopper1.setPosition(1);
                                 // Stopper2.setPosition(1);
                             }
                         }else{
-                            if (PewPewActive&&(Math.abs(TopFlywheel.getVelocity() - ticksPerSecond) < stopperThreshold)) {
+                            if (PewPewActive&&(Math.abs(Math.max(TopVelocity,bottomVelocity) - ticksPerSecond)) < stopperThreshold&& (lltracking.isTracked()||!tracking)) {
                                 Stopper1.setPosition(1);
                                 // Stopper2.setPosition(1);
                             }
@@ -441,25 +515,31 @@ public class Cast_Ration extends LinearOpMode {
 
             }
             updateShooter();
-
+            telemetry.addData("pewpewActive",PewPewActive);
+            telemetry.addData("intakeAVG",intakeAvg);
+            telemetry.addData("isempty",isEmpty());
+            telemetry.addData("inZOne",inZone(Xpos,Ypos));
             telemetry.addData("Custom TPS",custom_tp);
+            telemetry.addData("leftRear",backLeft);
             telemetry.addData("State: ", state);
-            telemetry.addData("TopFlywheel Velocity", TopFlywheel.getVelocity());
-            telemetry.addData("BottomFlywheel Velocity", BottomFlywheel.getVelocity());
+            telemetry.addData("TopFlywheel Velocity", TopVelocity);
+            telemetry.addData("BottomFlywheel Velocity", bottomVelocity);
             telemetry.addData("Target Speed", ticksPerSecond);
-            telemetry.addData("Error", ticksPerSecond - TopFlywheel.getVelocity());
-            telemetry.addData("Power", TopFlywheel.getPower());
+            telemetry.addData("Error", ticksPerSecond - TopVelocity);
             telemetry.addData("Current of shooter", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("Control Hub Current: ", totalCurrentAmps);
             telemetry.addData("Expansion Hub 2: ", expansionCurrentAmps);
-            telemetry.addData("intake current", IntakeMotor.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("intake current", intakeCurrent);
             telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
-            telemetry.addData("Position of Robot X: ", xRobot);
-            telemetry.addData("Position of Robot Y: ", yRobot);
-            telemetry.addData("Distance to Goal: ", distanceToGoal);
+            telemetry.addData("Position of Robot X: ", Xpos);
+            telemetry.addData("Position of Robot Y: ", Ypos);
+            telemetry.addData("Distance to  Goal: ", distanceToGoal);
             telemetry.addData("Pipeline: ", lltracking.limelight.getStatus().getPipelineIndex());
             telemetry.addData("EquationDisabled: ", equationDisabled);
-            telemetry.addData("Gamepad 2 B: ", gamepad2.b);
+            telemetry.addData("rearleft dt val",backLeftMotor);
+            telemetry.addData("difference of velocity: ",  computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed) - stationaryTPS);
+            telemetry.addData("full thing: ", computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed));
+            telemetry.addData("looptime: ", loopTime);
             telemetry.update();
             curPose=follower.getPose();
             loopTime = System.currentTimeMillis() - loopStart;

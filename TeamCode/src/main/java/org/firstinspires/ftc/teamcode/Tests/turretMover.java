@@ -32,6 +32,7 @@ public class turretMover extends LinearOpMode {
     public static double turret_kd = 0;
     private double turret_lastError = 0;
     private double power;
+    public static boolean reset=false;
 
     private double turret_errorSum = 0;
     private long turret_lastTime;
@@ -65,8 +66,7 @@ public class turretMover extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
             curTime = System.currentTimeMillis();
-            lltracking.updateTurret(0,0,0,0,0, 0, true);
-            if(gamepad1.a){
+            if(gamepad1.a||reset){
                 Turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }

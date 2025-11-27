@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subSystem;
 
+import static org.firstinspires.ftc.teamcode.TeleOp.Cast_Ration.isRed;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -13,6 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 @Config
 public class LimelightTracking {
@@ -32,14 +35,21 @@ public class LimelightTracking {
     public LLResult result;
     public double error = 0;
     public static double limit = 490;
-    public boolean limiting = false;
-    public double power = 0;
-    public double conversionRate = (2288.0 / 360.0);
-    public double distance = 1;
+    public boolean limiting=false;
+    public double power=0;
+    public double x=0;
+    public double conversionRate = (2288.0/360.0);//tick per ang
+    public double distance=1;
     public static double turretLeadTime = 0.3;
+    public double xLength;
+    public double yLength;
+    public static boolean futTurr=true;
+    public static boolean limited=false;
     Telemetry telemetry;
-
-    public LimelightTracking(LinearOpMode op, Telemetry telemetry) {
+    public static double redxPos=144;
+    private double goalPosx= isRed ?redxPos:9;
+    private static double goalPosy=135;
+    public LimelightTracking(LinearOpMode op, Telemetry telemetry){
         this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         Turret = op.hardwareMap.get(DcMotorEx.class, "Turret");
         Turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -86,56 +96,82 @@ public class LimelightTracking {
         telemetry.addData("turr Disabled !", " ");
     }
 
-    public void updateTurret(double botHeading, double botXPos, double botYpos, double vx, double vy, double rightx, boolean allianceIsRed) {
+    public void updateTurret(double botHeading, double botXPos, double botYpos,double vx, double vy,double rightx,boolean isRed){
         curTime = System.currentTimeMillis();
-
-        double goalPosX = allianceIsRed ? 135 : 14;
-        double goalPosY = 135;
-
-        double futureX = botXPos + vx * turretLeadTime;
-        double futureY = botYpos + vy * turretLeadTime;
-
-        double botDegHeading = Math.toDegrees(botHeading);
-        double turretHeadingDeg = botDegHeading > 0 ? botDegHeading - 180: botDegHeading + 180;
-        telemetry.addData("Bot Heading", botDegHeading);
-        telemetry.addData("Turret Heading", turretHeadingDeg);
-
-        double xLength = goalPosX - futureX;
-        double yLength = goalPosY - futureY;
-        double rawTurrAngle = Math.toDegrees(Math.atan2(yLength, xLength));
-
-        double turrAngle = rawTurrAngle - turretHeadingDeg;
-        while (turrAngle > 180) turrAngle -= 360;
-        while (turrAngle < -180) turrAngle += 360;
-
-        double turrCurPos = Turret.getCurrentPosition();
-        double x = (turrAngle * conversionRate) - turrCurPos;
-
-        if (x > limit) {
-            x = limit;
-        } else if (x < -limit) {
-            x = -limit;
+        double turrPos=Turret.getCurrentPosition();
+        curTime=System.currentTimeMillis();
+        result = limelight.getLatestResult();
+        botHeading=Math.toDegrees(botHeading);
+        botHeading=botHeading>0?-180+botHeading:180+botHeading;//this make zero the back of bot not intake
+        telemetry.addData("botHeading",botHeading);
+        if(isRed) {
+            limelight.pipelineSwitch(1);
+        }else{
+            limelight.pipelineSwitch(2);
         }
-
-        error = x;
-        power = turret_PID(curTime, rightx);
-
-        if (Turret.getCurrentPosition() > limit && power > 0) {
-            power = 0;
-            limiting = true;
-        } else if (Turret.getCurrentPosition() < -limit && power < 0) {
-            power = 0;
-            limiting = true;
-        } else {
-            limiting = false;
+        if(futTurr){
+            double futureX = botXPos + vx * turretLeadTime;
+            double futureY = botYpos + vy * turretLeadTime;
+            xLength = isRed?redxPos:14 - futureX;
+            yLength = goalPosy - futureY;
+        }else{
+            xLength = (isRed?redxPos:14 - botXPos);//we know the goals are at the very most right or left so we subtract botx from goal to get our xlenght. we dont have absolute val to keep direction
+            yLength = (goalPosy - botYpos);
         }
+            double rawturrAngle = Math.toDegrees(Math.atan2(yLength, xLength));
+            telemetry.addData("raw ang", rawturrAngle);
+            double turrAngle = (rawturrAngle - botHeading);
+            while (turrAngle > 180) {
+                turrAngle -= 360;
+            }
+            while (turrAngle < -180) {
+                turrAngle += 360;
+            }
+            x = Math.round(turrAngle);//x here is the angle neeeded relative tothe bot
+            telemetry.addData("ideal turrPos", x*conversionRate);
+            if(x*conversionRate>limit){
+                limited=true;
+                x=limit*(1/(conversionRate));
+            }else if(x*conversionRate<-limit){
+                x=-limit*(1/(conversionRate));
+                limited=true;
+            }else{
+                limited=false;
+            }
+            double turrCurPos = turrPos;
+            x = x*conversionRate - turrCurPos;
+            telemetry.addData("turrAngle", turrAngle);
+            telemetry.addData("turr error", x);
+            error = x;
+            power = turret_PID(curTime,rightx);
 
-        Turret.setPower(power);
 
-        telemetry.addData("Turret Angle", turrAngle);
-        telemetry.addData("Current Ticks", turrCurPos);
-        telemetry.addData("Error Ticks", error);
-        telemetry.addData("Turret Power", power);
+            if (turrPos > limit && power > 0) {
+                power = 0;
+                limiting = true;
+            } else if (turrPos < -limit && power < 0) {
+                power = 0;
+                limiting = true;
+            } else {
+                limiting = false;
+            }
+            Turret.setPower(power);
+            telemetry.addData("turr power in odo thingy",Turret.getPower());
+
+        if(result!=null&&result.isValid()){//TODO in LL config set limelight pos as at the back of the bot and test this
+            Pose3D botPose=result.getBotpose();
+            double heading=turrPos*(360.0/2288.0)+result.getTx();
+            heading=botPose.getOrientation().getYaw()-heading;
+            Pose updatePose=new Pose(botPose.getPosition().x,botPose.getPosition().y,Math.toRadians(heading));
+            telemetry.addData("LL botPose",updatePose);
+        }
+    }
+    public boolean isTracked(){
+        if(Math.abs(error)<10&&!limited){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public int shootingSpeed() {
@@ -148,20 +184,22 @@ public class LimelightTracking {
             return -4167;
         }
     }
-
-    public void turrReset() {
-        curTime = System.currentTimeMillis();
-        error = Turret.getCurrentPosition();
+    public void turrReset(){
+        double turrPos=Turret.getCurrentPosition();
+        error = turrPos;
+        if(Math.abs(error)>10){
+            turret_errorSum=0;
+        }
         telemetry.addData("null error", error);
         power = turret_PID(curTime, 0);
-        if (Turret.getCurrentPosition() >= limit && -power > 0) {
-            power = 0;
-            limiting = true;
-        } else if (Turret.getCurrentPosition() <= -limit && -power < 0) {
-            power = 0;
-            limiting = true;
-        } else {
-            limiting = false;
+        if (turrPos>=limit&&-power>0){
+            power=0;
+            limiting=true;
+        } else if (turrPos<=-limit&&-power<0){
+            power=0;
+            limiting=true;
+        }else{
+            limiting=false;
         }
         Turret.setPower(-power);
         telemetry.addData("null power", Turret.getPower());

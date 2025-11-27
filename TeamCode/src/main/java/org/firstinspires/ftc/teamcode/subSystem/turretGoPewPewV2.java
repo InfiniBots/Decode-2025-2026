@@ -105,7 +105,7 @@ public class turretGoPewPewV2 {
 
     public void setSpeed(int targetSpeed){
         shooter_target = targetSpeed;
-        telemetry.addData("shooter speed",targetSpeed);
+        telemetry.addData("shooter setSpeed",targetSpeed);
     }
     public double shooterGetSpeed(){
         return Math.max(TurrMotor.getVelocity(),TurrMotor2.getVelocity());
@@ -117,7 +117,6 @@ public class turretGoPewPewV2 {
         shooter_lastTime = time;
         TurrMotor.setPower(-power);
         TurrMotor2.setPower(-power);
-        telemetry.addData("shooter act speed",TurrMotor.getVelocity());
     }
     public void updateTurret(long time){
         if(lime) {
