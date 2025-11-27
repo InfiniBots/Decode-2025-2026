@@ -79,6 +79,7 @@ public class Cast_Ration extends LinearOpMode {
     private boolean prevRightStickButton = false;
     public static boolean continueing=false;
     public boolean ytoggle=false;
+    public boolean gettingTailgatedBySomeExodiusTypeBot = false;
     public double stationaryEquation = 283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
     enum State {
         GENERAL_MOVEMENT,
@@ -267,43 +268,52 @@ public class Cast_Ration extends LinearOpMode {
                 once = true;*/
 
 
-                double x = gamepad1.left_stick_x * 1.1;
-                double y = -gamepad1.left_stick_y;
-                double turn = gamepad1.right_stick_x * Sensitivity;
+            double x = gamepad1.left_stick_x * 1.1;
+            double y = -gamepad1.left_stick_y;
+            double turn = gamepad1.right_stick_x * Sensitivity;
 
-                double theta = Math.atan2(y, x);
-                double power = Math.hypot(x, y);
+            double theta = Math.atan2(y, x);
+            double power = Math.hypot(x, y);
 
-                double sin = Math.sin(theta - Math.PI / 4);
-                double cos = Math.cos(theta - Math.PI / 4);
-                double max = Math.max(Math.abs(sin), Math.abs(cos));
+            double sin = Math.sin(theta - Math.PI / 4);
+            double cos = Math.cos(theta - Math.PI / 4);
+            double max = Math.max(Math.abs(sin), Math.abs(cos));
 
-                double frontLeft = power * cos / max + turn;
-                double frontRight = power * sin / max - turn;
-                double backLeft = power * sin / max + turn;
-                double backRight = power * cos / max - turn;
+            double frontLeft = power * cos / max + turn;
+            double frontRight = power * sin / max - turn;
+            double backLeft = power * sin / max + turn;
+            double backRight = power * cos / max - turn;
 
-                if ((power + Math.abs(turn)) > 1) {
-                    frontLeft /= power + Math.abs(turn);
-                    frontRight /= power + Math.abs(turn);
-                    backLeft /= power + Math.abs(turn);
-                    backRight /= power + Math.abs(turn);
-                }
+            if ((power + Math.abs(turn)) > 1) {
+                frontLeft /= power + Math.abs(turn);
+                frontRight /= power + Math.abs(turn);
+                backLeft /= power + Math.abs(turn);
+                backRight /= power + Math.abs(turn);
+            }
+            if (totalCurrentAmps >= 600613){ // i have no clue what the threshold for the amps taken by the drivetrain is to the point where it stops other motors from functioning at full speed so i just put google as a placeholder this should change hopefully in the near future
+                gettingTailgatedBySomeExodiusTypeBot = true; // :(
+                frontRight *= 0.75; // it should in theory keep doing 75% of its full power until it reaches the threshold keyword in theory
+                frontLeft *= 0.75; // it should in theory keep doing 75% of its full power until it reaches the threshold keyword in theory
+                backRight*= 0.75; // it should in theory keep doing 75% of its full power until it reaches the threshold keyword in theory
+                backLeft *= 0.75; // it should in theory keep doing 75% of its full power until it reaches the threshold keyword in theory
+            } else {
+                gettingTailgatedBySomeExodiusTypeBot = false; // :D
+            }
 
-                frontLeftMotor.setPower(frontLeft);
-                backLeftMotor.setPower(backLeft);
-                frontRightMotor.setPower(frontRight);
-                backRightMotor.setPower(backRight);
-                if(gamepad2.y&&!ytoggle){
-                    follower.setPose(new Pose(7,11,Math.toRadians(-90)));
-                }
-                ytoggle = gamepad2.y;
+            frontLeftMotor.setPower(frontLeft);
+            backLeftMotor.setPower(backLeft);
+            frontRightMotor.setPower(frontRight);
+            backRightMotor.setPower(backRight);
+            if(gamepad2.y&&!ytoggle){
+                follower.setPose(new Pose(7,11,Math.toRadians(-90)));
+            }
+            ytoggle = gamepad2.y;
 
-                if (gamepad2.back && !lastBack) {
-                    isRed = !isRed;
-                    follower.setPose(isRed?finalShoot:b_finalShoot);
-                }
-                lastBack = gamepad2.back;
+            if (gamepad2.back && !lastBack) {
+                isRed = !isRed;
+                follower.setPose(isRed?finalShoot:b_finalShoot);
+            }
+            lastBack = gamepad2.back;
            /* futx=(loopTime*1000)*follower.getVelocity().getXComponent();;
             futy=(loopTime*1000)*follower.getVelocity().getYComponent();
             double futdistanceToGoal = Math.sqrt(Math.pow((130 - (follower.getPose().getX() + futx)), 2) + Math.pow((135 - (follower.getPose().getY() + futy)), 2));
@@ -379,12 +389,12 @@ public class Cast_Ration extends LinearOpMode {
                     Sensitivity=0.79;
                     custom_tp = (int) computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed);
                     if(tracking)lltracking.updateTurret(follower.getHeading(),follower.getPose().getX(), follower.getPose().getY(), follower.getVelocity().getXComponent(),
-                                                        follower.getVelocity().getYComponent(), gamepad1.right_stick_x,isRed);
+                            follower.getVelocity().getYComponent(), gamepad1.right_stick_x,isRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
                     if (gamepad2.a) {
                         Stopper1.setPosition(1);
-                       // Stopper2.setPosition(1);
+                        // Stopper2.setPosition(1);
                     }
                     if (gamepad1.left_bumper) {
                         double cyc = (currTime - cycleTime) / 1000;
@@ -409,10 +419,10 @@ public class Cast_Ration extends LinearOpMode {
 
                     if (gamepad2.dpad_up) {
                         Stopper1.setPosition(1);
-                      //  Stopper2.setPosition(1);
+                        //  Stopper2.setPosition(1);
                     } else if (gamepad2.dpad_down) {
                         Stopper1.setPosition(0);
-                       // Stopper2.setPosition(0);
+                        // Stopper2.setPosition(0);
                     } else {
                         if(!equationDisabled) {
                             if (PewPewActive && Math.abs(TopFlywheel.getVelocity() - custom_tp) < stopperThreshold) {
