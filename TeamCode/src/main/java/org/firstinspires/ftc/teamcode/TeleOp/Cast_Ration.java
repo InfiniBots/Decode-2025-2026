@@ -29,6 +29,7 @@ import java.util.List;
 @Config
 public class Cast_Ration extends LinearOpMode {
     public static boolean isRed =true;
+    public static boolean debugging=true;
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backLeftMotor;
@@ -56,7 +57,7 @@ public class Cast_Ration extends LinearOpMode {
     public long loopTime=80;
     public long loopStart;
     public static int stopperThreshold = 80;
-    public static double emptyThreshold = 700;//TODO edit this variable
+    public static double emptyThreshold = 500;//TODO edit this variable
     public static boolean tracking=true;
     private long currTime;
     private long deltaTime;
@@ -106,6 +107,10 @@ public class Cast_Ration extends LinearOpMode {
     public boolean PewPewActive=false;
     public int intakeReads=0;
     public ArrayList<Double> intakeReadings=new ArrayList<>();
+    public ArrayList<Double> intakeMovingAvg=new ArrayList<>();
+    public static double Xvel=0;
+    public static double Yvel=0;
+
     public double intakeAvg=1;
     public static double chillSpeed=-1;
     public static double intakeMult=100;
@@ -120,10 +125,31 @@ public class Cast_Ration extends LinearOpMode {
                 .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(-90))
                 .build();
     }*/
+    public void intakeMovAvg(){
+        intakeReadings.add(IntakeMotor.getCurrent(CurrentUnit.AMPS));
+        if(intakeReadings.size()>3){
+            intakeReadings.remove(0);
+            intakeMovingAvg.add(Math.max(intakeReadings.get(0),Math.max(intakeReadings.get(1),intakeReadings.get(2))));
+        }
+
+        //intake avg
+        if(intakeMovingAvg.size()>5) {
+            intakeMovingAvg.remove(0);
+            for(int i=0;i<intakeMovingAvg.size();i++){
+                if(i==0){
+                    intakeAvg=0;
+                }
+                intakeAvg+=intakeMovingAvg.get(i);
+                if(i==intakeMovingAvg.size()-1){
+                    intakeAvg=intakeAvg/intakeMovingAvg.size();
+                    intakeAvg=intakeAvg*intakeMult;
+                }
+            }
+        }
+    }
 
     public double PID(double currentVelocity, double targetVelocity, long time) {
         double error = targetVelocity - currentVelocity;
-        telemetry.addData("targetVelocity",targetVelocity);
         if (time <= 0) {
             time = 1;
         }
@@ -135,13 +161,13 @@ public class Cast_Ration extends LinearOpMode {
     }
 
 
-    public double computeMovingCompensatedTPS(double distanceToGoal, Pose robotPose, Vector robotVelocity, boolean isRed){
+    public double computeMovingCompensatedTPS(double distanceToGoal, Pose robotPose, boolean isRed){
 
         double goalX = isRed ? 130 : 14;
         double goalY = 135;
 
-        double vx = robotVelocity.getXComponent();
-        double vy = robotVelocity.getYComponent();
+        double vx = Xvel;
+        double vy =Yvel;
 
         double dx = goalX - robotPose.getX();
         double dy = goalY - robotPose.getY();
@@ -154,20 +180,19 @@ public class Cast_Ration extends LinearOpMode {
         double v_robot = vx * ux + vy * uy;
 
         double stationaryTPS = 283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
-
-        telemetry.addData("dx", dx);
-        telemetry.addData("dy", dy);
-        telemetry.addData("dist, ", dist);
-        telemetry.addData("ux", ux);
-        telemetry.addData("uy, ", uy);
-        telemetry.addData("v_robot", v_robot);
-        telemetry.addData("velocity x", robotVelocity.getXComponent());
-        telemetry.addData("velocity y,", robotVelocity.getYComponent());
+        if(debugging) {
+            telemetry.addData("dx", dx);
+            telemetry.addData("dy", dy);
+            telemetry.addData("ux", ux);
+            telemetry.addData("uy, ", uy);
+            telemetry.addData("v_robot", v_robot);
+            telemetry.addData("velocity x", Xvel);
+            telemetry.addData("velocity y,", Yvel);
+        }
 
         double wheelCircumferenceInches = Math.PI * (72.0/25.4); //wheel diameter in inches
         double ticksPerInch = 28.0/wheelCircumferenceInches; //motor ticks per rev
         return stationaryTPS - ticksPerInch * v_robot;
-
     }
 
 
@@ -200,7 +225,6 @@ public class Cast_Ration extends LinearOpMode {
         double yRobot = follower.getPose().getY();
         distanceToGoal = isRed?Math.sqrt(Math.pow((130-xRobot), 2) + Math.pow((135-yRobot), 2)):Math.sqrt(Math.pow((14-xRobot), 2) + Math.pow((135-yRobot), 2));
         stationaryTPS =283.2006 + (65.59412 * distanceToGoal) - (1.299762 * (distanceToGoal * distanceToGoal)) + (0.01202799 * Math.pow(distanceToGoal, 3)) - (0.00003992315 * Math.pow(distanceToGoal, 4));
-        timef=1;//input whatever equation here
     }
     public void bulkRead(){
         Xpos=follower.getPose().getX();
@@ -209,9 +233,11 @@ public class Cast_Ration extends LinearOpMode {
         TopVelocity=TopFlywheel.getVelocity();
         bottomVelocity=BottomFlywheel.getVelocity();
         intakeCurrent=IntakeMotor.getCurrent(CurrentUnit.AMPS);
+        Xvel=follower.getVelocity().getXComponent();
+        Yvel=follower.getVelocity().getYComponent();
     }
     public boolean inZone(double x,double y){
-        if((y>=x&&y>=-x+144)||(y<=x-48&&y<=-x+96)){
+        if((y>=x-3&&y>=-x+141)||(y<=x-45&&y<=-x+99)){
             return true;
         }else{
             return false;
@@ -277,7 +303,12 @@ public class Cast_Ration extends LinearOpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
+        if(debugging){
+            telemetry.setMsTransmissionInterval(1);
 
+        }else{
+            telemetry.setMsTransmissionInterval(100);
+        }
         telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
         telemetry.update();
         waitForStart();
@@ -378,18 +409,7 @@ public class Cast_Ration extends LinearOpMode {
             switch (state) {
                 case GENERAL_MOVEMENT:
                     slowShot=true;
-                    intakeReadings.add(IntakeMotor.getCurrent(CurrentUnit.AMPS));
-                    if(intakeReadings.size()>3){
-                        intakeReadings.remove(0);
-                    }
-                    //intake avg
-                    for(int i=0;i<intakeReadings.size();i++){
-                        if(i==0){
-                            intakeAvg=0;
-                        }
-                        intakeAvg+=intakeReadings.get(0);
-                        if(i==intakeReadings.size()-1)intakeAvg=intakeAvg*intakeMult;
-                    }
+                    intakeMovAvg();
                     shooterOn=false;
                     Sensitivity=gSensitivity;
                     PewPewActive=false;
@@ -439,23 +459,11 @@ public class Cast_Ration extends LinearOpMode {
 
                 case PEW_PEW:
                     slowShot=false;
-                    intakeReadings.add(IntakeMotor.getCurrent(CurrentUnit.AMPS));
-                    if(intakeReadings.size()>3){
-                        intakeReadings.remove(0);
-                    }
-                    //intake avg
-                    for(int i=0;i<intakeReadings.size();i++){
-                        if(i==0){
-                            intakeAvg=0;
-                        }
-                        intakeAvg+=intakeReadings.get(0);
-                        if(i==intakeReadings.size()-1)intakeAvg=intakeAvg*intakeMult;
-                    }
-
+                    intakeMovAvg();
                     Sensitivity=pSensitivity;
-                    custom_tp = (int) computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed);
+                    custom_tp = (int) computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), isRed);
                     shooterOn=true;
-                    if(tracking)lltracking.updateTurret(heading,Xpos, Ypos,follower.getVelocity().getXComponent(),follower.getVelocity().getYComponent(),gamepad1.right_stick_x, isRed);
+                    if(tracking)lltracking.updateTurret(heading,Xpos, Ypos,Xvel,Yvel,gamepad1.right_stick_x, isRed);
                     //ticksPerSecond = lltracking.shootingSpeed()!=-4167?lltracking.shootingSpeed()-20:1500;
                     ticksPerSecond = shootingSpeed;
                     if (gamepad2.a) {
@@ -463,20 +471,31 @@ public class Cast_Ration extends LinearOpMode {
                         // Stopper2.setPosition(1);
                     }
                     if(autoShoot) {
-                        if (isEmpty() || !inZone(Xpos, Ypos)) {
-                            PewPewActive = false;
-                        } else if (!isEmpty() || inZone(Xpos, Ypos)) {
+                        if(!isEmpty()&&inZone(Xpos,Ypos)){
                             PewPewActive = true;
+                        }else if(isEmpty()){
+                            double cyc = (currTime - cycleTime) / 1000.0;
+                            cycles.add(cyc);
+                            cycleTime = currTime;
+                            ticksPerSecond = 0;
+                            PewPewActive=false;
+                            state = State.GENERAL_MOVEMENT;
+                            intakeReadings.clear();
+                            intakeMovingAvg.clear();
+                        }else{
+                            PewPewActive = false;
                         }
+
                     }
                     if (gamepad1.left_bumper) {
-                        double cyc = (currTime - cycleTime) / 1000;
+                        double cyc = (currTime - cycleTime) / 1000.0;
                         cycles.add(cyc);
                         cycleTime = currTime;
                         ticksPerSecond = 0;
                         PewPewActive=false;
                         state = State.GENERAL_MOVEMENT;
                         intakeReadings.clear();
+                        intakeMovingAvg.clear();
                     }
                     if(gamepad1.right_bumper&&!continueing) {
                         PewPewActive = true;
@@ -515,30 +534,28 @@ public class Cast_Ration extends LinearOpMode {
 
             }
             updateShooter();
-            telemetry.addData("pewpewActive",PewPewActive);
-            telemetry.addData("intakeAVG",intakeAvg);
-            telemetry.addData("isempty",isEmpty());
-            telemetry.addData("inZOne",inZone(Xpos,Ypos));
-            telemetry.addData("Custom TPS",custom_tp);
-            telemetry.addData("leftRear",backLeft);
+            if(debugging){
+                telemetry.addData("pewpewActive",PewPewActive);
+                telemetry.addData("intakeAVG",intakeAvg);
+                telemetry.addData("isempty",isEmpty());
+                telemetry.addData("inZOne",inZone(Xpos,Ypos));
+                telemetry.addData("Custom TPS",custom_tp);
+                telemetry.addData("leftRear",backLeftMotor.getPower());
+                telemetry.addData("TopFlywheel Velocity", TopVelocity);
+                telemetry.addData("BottomFlywheel Velocity", bottomVelocity);
+                telemetry.addData("Current of shooter", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
+                telemetry.addData("Control Hub Current: ", totalCurrentAmps);
+                telemetry.addData("Expansion Hub 2: ", expansionCurrentAmps);
+                telemetry.addData("intake current", intakeCurrent);
+                telemetry.addData("Position of Robot X: ", Xpos);
+                telemetry.addData("Position of Robot Y: ", Ypos);
+                telemetry.addData("Distance to  Goal: ", distanceToGoal);
+                telemetry.addData("difference of velocity: ",  custom_tp - stationaryTPS);
+            }
             telemetry.addData("State: ", state);
-            telemetry.addData("TopFlywheel Velocity", TopVelocity);
-            telemetry.addData("BottomFlywheel Velocity", bottomVelocity);
-            telemetry.addData("Target Speed", ticksPerSecond);
-            telemetry.addData("Error", ticksPerSecond - TopVelocity);
-            telemetry.addData("Current of shooter", TopFlywheel.getCurrent(CurrentUnit.AMPS) + BottomFlywheel.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("Control Hub Current: ", totalCurrentAmps);
-            telemetry.addData("Expansion Hub 2: ", expansionCurrentAmps);
-            telemetry.addData("intake current", intakeCurrent);
             telemetry.addData("Alliance", isRed ? "RED" : "BLUE");
-            telemetry.addData("Position of Robot X: ", Xpos);
-            telemetry.addData("Position of Robot Y: ", Ypos);
-            telemetry.addData("Distance to  Goal: ", distanceToGoal);
             telemetry.addData("Pipeline: ", lltracking.limelight.getStatus().getPipelineIndex());
             telemetry.addData("EquationDisabled: ", equationDisabled);
-            telemetry.addData("rearleft dt val",backLeftMotor);
-            telemetry.addData("difference of velocity: ",  computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed) - stationaryTPS);
-            telemetry.addData("full thing: ", computeMovingCompensatedTPS(distanceToGoal, follower.getPose(), follower.getVelocity(), isRed));
             telemetry.addData("looptime: ", loopTime);
             telemetry.update();
             curPose=follower.getPose();

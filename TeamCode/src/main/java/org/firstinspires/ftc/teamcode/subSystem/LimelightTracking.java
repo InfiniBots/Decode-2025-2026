@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subSystem;
 
+import static org.firstinspires.ftc.teamcode.TeleOp.Cast_Ration.debugging;
 import static org.firstinspires.ftc.teamcode.TeleOp.Cast_Ration.isRed;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -103,7 +104,6 @@ public class LimelightTracking {
         result = limelight.getLatestResult();
         botHeading=Math.toDegrees(botHeading);
         botHeading=botHeading>0?-180+botHeading:180+botHeading;//this make zero the back of bot not intake
-        telemetry.addData("botHeading",botHeading);
         if(isRed) {
             limelight.pipelineSwitch(1);
         }else{
@@ -119,7 +119,6 @@ public class LimelightTracking {
             yLength = (goalPosy - botYpos);
         }
             double rawturrAngle = Math.toDegrees(Math.atan2(yLength, xLength));
-            telemetry.addData("raw ang", rawturrAngle);
             double turrAngle = (rawturrAngle - botHeading);
             while (turrAngle > 180) {
                 turrAngle -= 360;
@@ -128,7 +127,6 @@ public class LimelightTracking {
                 turrAngle += 360;
             }
             x = Math.round(turrAngle);//x here is the angle neeeded relative tothe bot
-            telemetry.addData("ideal turrPos", x*conversionRate);
             if(x*conversionRate>limit){
                 limited=true;
                 x=limit*(1/(conversionRate));
@@ -140,8 +138,12 @@ public class LimelightTracking {
             }
             double turrCurPos = turrPos;
             x = x*conversionRate - turrCurPos;
-            telemetry.addData("turrAngle", turrAngle);
-            telemetry.addData("turr error", x);
+            if(debugging) {
+                telemetry.addData("raw ang", rawturrAngle);
+                telemetry.addData("turrAngle", turrAngle);
+                telemetry.addData("ideal turrPos", turrAngle * conversionRate);
+                telemetry.addData("turr error", x);
+            }
             error = x;
             power = turret_PID(curTime,rightx);
 
@@ -156,14 +158,12 @@ public class LimelightTracking {
                 limiting = false;
             }
             Turret.setPower(power);
-            telemetry.addData("turr power in odo thingy",Turret.getPower());
-
         if(result!=null&&result.isValid()){//TODO in LL config set limelight pos as at the back of the bot and test this
             Pose3D botPose=result.getBotpose();
             double heading=turrPos*(360.0/2288.0)+result.getTx();
             heading=botPose.getOrientation().getYaw()-heading;
             Pose updatePose=new Pose(botPose.getPosition().x,botPose.getPosition().y,Math.toRadians(heading));
-            telemetry.addData("LL botPose",updatePose);
+            if(debugging)telemetry.addData("LL botPose",updatePose);
         }
     }
     public boolean isTracked(){
@@ -190,7 +190,6 @@ public class LimelightTracking {
         if(Math.abs(error)>10){
             turret_errorSum=0;
         }
-        telemetry.addData("null error", error);
         power = turret_PID(curTime, 0);
         if (turrPos>=limit&&-power>0){
             power=0;
@@ -202,7 +201,6 @@ public class LimelightTracking {
             limiting=false;
         }
         Turret.setPower(-power);
-        telemetry.addData("null power", Turret.getPower());
     }
 
     private double distanceAprilTag(double ta) {
